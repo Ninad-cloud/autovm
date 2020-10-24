@@ -1,4 +1,5 @@
 #!/bin/sh
+./root/autovm/main.sh
 
 chrony_install(){
 	PKG_FAILED=0
