@@ -13,13 +13,15 @@ chrony_install(){
 	else
 		echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ON CONTROLLER NODE] \e[0m ----\n"		
 	fi
-	#sleep 20
+	sleep 10
 	
 	echo "INSTALLING CHRONY ON THE OTHER NODES"
+	echo "${nodes[@]}"
 	for i in "${nodes[@]}"
 	do
 		PKG_FAILED=0
-	     source  /root/autovm/chk_Connectivity.sh_b $i
+	     #source  /root/autovm/chk_Connectivity.sh_b $i
+	     	sleep 5
 		echo "Node $i"
 		ssh root@$i apt install chrony -y || PKG_FAILED=1
 

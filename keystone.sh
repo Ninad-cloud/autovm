@@ -34,6 +34,7 @@ sleep 2
 echo "Populate The Identity Service"
 
 su -s /bin/sh -c "keystone-manage db_sync" keystone
+echo "Database Populated for keystone!!!!!"
 sleep 5
 echo "######################INITIALIZE THE FERNET SETUP##############"
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone

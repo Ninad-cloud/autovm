@@ -31,7 +31,7 @@ add_ssh-keygen(){
 		interact "
 
 	done 
-	
+sleep 5	
 		
 }
 
@@ -43,12 +43,14 @@ config_Hostnames(){
 	sed -i 's/^127.0.1.1/#&/' /etc/hosts
 		grep -q "^#controller" /etc/hosts || sed -i '$ a  #gateway\n'$GATEWAY_MGT_IP'\t'$GATEWAY_HOSTNAME'\n#controller\n'$CONTROLLER_MGT_IP'\t'$CONTROLLER_HOSTNAME'\n#compute1\n'$COMPUTE1_MGT_IP'\t'$COMPUTE1_HOSTNAME'\n#block1\n'$BLOCK1_MGT_IP'\t'$BLOCK1_HOSTNAME'\n#object1\n'$OBJECT1_MGT_IP'\t'$OBJECT1_HOSTNAME'\n#object2\n'$OBJECT2_MGT_IP'\t'$OBJECT2_HOSTNAME'\n#end' /etc/hosts  	
 
+		sleep 10
 	#hostname configuration on other nodes.
+	echo "${nodes[@]}"
+	echo "Start with Other Nodes!!!!!!!"
 	for i in "${nodes[@]}"
 	do
 		echo "/etc/hosts configuration on other nodes"
 		echo "[ Node $i ]"
-		chk_Connectivity $i
 		ssh -t -T root@$i << EOF
 		sed -i 's/^127.0.1.1/#&/' /etc/hosts
 		grep -q "^#controller" /etc/hosts || sed -i '$ a  #gateway\n'$GATEWAY_MGT_IP'\t'$GATEWAY_HOSTNAME'\n#controller\n'$CONTROLLER_MGT_IP'\t'$CONTROLLER_HOSTNAME'\n#compute1\n'$COMPUTE1_MGT_IP'\t'$COMPUTE1_HOSTNAME'\n#block1\n'$BLOCK1_MGT_IP'\t'$BLOCK1_HOSTNAME'\n#object1\n'$OBJECT1_MGT_IP'\t'$OBJECT1_HOSTNAME'\n#object2\n'$OBJECT2_MGT_IP'\t'$OBJECT2_HOSTNAME'\n#end' /etc/hosts
@@ -58,12 +60,12 @@ EOF
 
 }
 
-#ssh-keygen_gen
-#add_ssh-keygen
-#config_Hostnames
-#source /root/autovm/ntp_install.sh
+ssh-keygen_gen
+add_ssh-keygen
+config_Hostnames
+source /root/autovm/ntp_install.sh
 #source /root/autovm/generic_pkg.sh
 #source /root/autovm/mysql_config.sh
 #source /root/autovm/rabbitmq.sh
-source /root/autovm/memcached.sh
+#source /root/autovm/memcached.sh
 #source /root/autovm/etcd.sh
