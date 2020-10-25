@@ -15,9 +15,9 @@ apt install mariadb-server python-pymysql -y || PKG_FAILED=1
 		fi
 
 sleep 3		
-file="/etc/mysql/mariadb.conf.d/99-openstack.cnf"
+filepath="/etc/mysql/mariadb.conf.d/99-openstack.cnf"
 
-if [ ! -f $file ]; then
+if [ ! -f $filepath ]; then
 echo "[mysqld]
 bind-address = 10.0.0.11
 
@@ -25,10 +25,10 @@ default-storage-engine = innodb
 innodb_file_per_table = on
 max_connections = 4096
 collation-server = utf8_general_ci
-character-set-server = utf8" >> $file
-sleep 5
+character-set-server = utf8" >> $filepath
+sleep 3
 service mysql restart
-sleep 20
+sleep 10
 fi
 
 	echo -e "\n\n\e[36m######################## MYSQL INSTALL AND CONFIGURE ON CONTROLLER NODE IN DONE ################################# \e[0m\n"

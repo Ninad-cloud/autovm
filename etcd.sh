@@ -1,7 +1,7 @@
 #!/bin/bash
 source /root/autovm/globalvar.sh
 
-#######################################[ ETCD INSTALLATION ]####################################################
+##################[ ETCD INSTALLATION ]#######################
 
 etcd_config(){
 PKG_FAILED=0
