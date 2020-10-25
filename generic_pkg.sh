@@ -26,7 +26,7 @@ generic_pkg(){
 
 	echo -e "\n\e[36m PACKAGE INSTALLATION ON CONTROLLER NODE IS DONE \e \n\n\n"	
 	##Installation on other Nodes -Compute
-
+		echo "$nodes"
         for i in "${nodes[@]}"
         do
 		echo "first node $i "
