@@ -23,7 +23,7 @@ apt install keystone -y || || PKG_FAILED=1
 		else
 			echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"		
 		fi
-
+<<'COMMENTS'
 echo "MODIFY keystone CONFIGURATION"
 grep -q "^connection = mysql+pymysql" /etc/keystone/keystone.conf || sed -i '0,/^connection = sqlite/ s||connection = mysql+pymysql://keystone:'$COMMON_PASS'@controller/keystone\n#&|' /etc/keystone/keystone.conf
 
@@ -120,7 +120,7 @@ openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Defau
 source ./admin-openrc
   
 openstack token issue
- 
+COMMENTS
 
   
 }
