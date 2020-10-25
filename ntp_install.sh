@@ -1,4 +1,5 @@
 #!/bin/sh
+source /root/autovm/globalvar.sh
 ./root/autovm/main.sh
 
 chrony_install(){
