@@ -41,7 +41,7 @@ config_Hostnames(){
 
 	#hostname configuration on controller node
 	sed -i 's/^127.0.1.1/#&/' /etc/hosts
-        grep -q "^#controller" /etc/hosts || sed -i "$ a \\\n#controller\n$CONTROLLER_MGT_IP\t$CONTROLLER_HOSTNAME" /etc/hosts && sed -i "$ a \\\n#compute1\n$COMPUTE1_MGT_IP\t$COMPUTE1_HOSTNAME" /etc/hosts && sed -i "$ a \\\n#gateway\n$GATEWAY_MGT_IP\t$GATEWAY_HOSTNAME" /etc/hosts && sed -i "$ a \\\n#block1\n$BLOCK1_MGT_IP\t$BLOCK1_HOSTNAME" /etc/hosts && sed -i "$ a \\\n#object1\n$OBJECT1_MGT_IP\t$OBJECT1_HOSTNAME" /etc/hosts && sed -i "$ a \\\n#object2\n$OBJECT2_MGT_IP\t$OBJECT2_HOSTNAME" /etc/hosts  	
+		grep -q "^#controller" /etc/hosts || sed -i '$ a  #gateway\n'$GATEWAY_MGT_IP'\t'$GATEWAY_HOSTNAME'\n#controller\n'$CONTROLLER_MGT_IP'\t'$CONTROLLER_HOSTNAME'\n#compute1\n'$COMPUTE1_MGT_IP'\t'$COMPUTE1_HOSTNAME'\n#block1\n'$BLOCK1_MGT_IP'\t'$BLOCK1_HOSTNAME'\n#object1\n'$OBJECT1_MGT_IP'\t'$OBJECT1_HOSTNAME'\n#object2\n'$OBJECT2_MGT_IP'\t'$OBJECT2_HOSTNAME'\n#end' /etc/hosts  	
 
 	#hostname configuration on other nodes.
 	for i in "${nodes[@]}"
