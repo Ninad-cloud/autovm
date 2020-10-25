@@ -28,7 +28,6 @@ apt install keystone -y || PKG_FAILED=1
 echo "MODIFY keystone CONFIGURATION"
 grep -q "^connection = mysql+pymysql" /etc/keystone/keystone.conf || sed -i '0,/^connection = sqlite/ s||connection = mysql+pymysql://keystone:'$COMMON_PASS'@controller/keystone\n#&|' /etc/keystone/keystone.conf
 
-sleep 2
 grep -q "^provider = fernet" /etc/keystone/keystone.conf || sed -i "/^\[token\]/ a provider = fernet" /etc/keystone/keystone.conf
 sleep 2
 echo "Populate The Identity Service"
@@ -36,6 +35,7 @@ echo "Populate The Identity Service"
 su -s /bin/sh -c "keystone-manage db_sync" keystone
 echo "Database Populated for keystone!!!!!"
 sleep 5
+<<'COMMENTS'
 echo "######################INITIALIZE THE FERNET SETUP##############"
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 sleep 2
@@ -50,7 +50,7 @@ keystone-manage bootstrap --bootstrap-password $COMMON_PASS \
   --bootstrap-public-url http://controller:5000/v3/ \
   --bootstrap-region-id RegionOne
   
-  
+  echo "DONE WITH THE BOOTSTRAP........."
   echo "#######################CONFIGURE APACHE HTTP SERVER#################"
   
 
@@ -116,18 +116,33 @@ openstack role add --project myproject --user myuser myrole
 
 unset OS_AUTH_URL OS_PASSWORD
 
-openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin --os-password $COMMON_PASS token issue
+ERROR=""
+openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin --os-password $COMMON_PASS token issue || ERROR="YES"
 
 ####Request Authentication token for myuser user###############
 
-openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name myproject --os-username myuser --os-password $COMMON_PASS token issue
+openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name myproject --os-username myuser --os-password $COMMON_PASS token issue || ERROR="YES"
 
 #####Using the Client Scripts Request Authentication#########
 
 source ./admin-openrc
   
-openstack token issue
+openstack token issue || ERROR="YES"
 
+if [ -z $ERROR ];then
+			echo -e "\nKeyStone Service Installation Sucessful!"
+		else
+			echo -e "\nKeyStone Service Installation FAILED, EXITING..!"	
+			exit
+		fi
+
+	else
+		echo -e "\n\e[36m[[Keystone]: SERVICE IS ALREADY CONFIGURED, IGNORING DUPLICATION..\e[0m\n"
+	fi
+	
+
+	echo -e "\n\n\n\e[36m######################[ KEYSTONE ] : SERVICE DEPLOYED SUCCESFULLY #####################\e[0m\n\n\n"
+COMMENTS
   
 }
 keystone_service
