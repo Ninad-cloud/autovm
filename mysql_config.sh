@@ -3,7 +3,7 @@
 source /root/autovm/globalvar.sh
 
 echo "INSTALL AND CONFIGURE MYSQL ON CONTROLLER NODE STARTED"
-
+sleep 2
 Mysql_config(){
 PKG_FAILED=0
 apt install mariadb-server python-pymysql -y || PKG_FAILED=1
@@ -41,7 +41,7 @@ unconfig_Mysql(){
 	service mysql stop
 	rm -rf /etc/mysql/conf.d/openstack.cnf
 	service mysql start
-
+	sleep 5
 	echo -e "\n\n\e[36m###### MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IN DONE ########## \e[0m\n"
 
 }

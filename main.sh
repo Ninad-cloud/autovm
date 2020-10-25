@@ -45,7 +45,7 @@ config_Hostnames(){
 
 		sleep 10
 	#hostname configuration on other nodes.
-	echo "${nodes[@]}"
+	echo "${nodes}"
 	echo "Start with Other Nodes!!!!!!!"
 	for i in "${nodes[@]}"
 	do
@@ -60,12 +60,12 @@ EOF
 
 }
 
-ssh-keygen_gen
-add_ssh-keygen
-config_Hostnames
-source /root/autovm/ntp_install.sh
+#ssh-keygen_gen
+#add_ssh-keygen
+#config_Hostnames
+#source /root/autovm/ntp_install.sh
 #source /root/autovm/generic_pkg.sh
-#source /root/autovm/mysql_config.sh
-#source /root/autovm/rabbitmq.sh
-#source /root/autovm/memcached.sh
-#source /root/autovm/etcd.sh
+source /root/autovm/mysql_config.sh
+source /root/autovm/rabbitmq.sh
+source /root/autovm/memcached.sh
+source /root/autovm/etcd.sh

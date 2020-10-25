@@ -32,18 +32,27 @@ grep -q "^provider = fernet" /etc/keystone/keystone.conf || sed -i "/^\[token\]/
 sleep 2
 echo "Populate The Identity Service"
 
+echo "su -s /bin/sh -c "keystone-manage db_sync" keystone"
+
 su -s /bin/sh -c "keystone-manage db_sync" keystone
+
 echo "Database Populated for keystone!!!!!"
 sleep 5
 
 echo "######################INITIALIZE THE FERNET SETUP##############"
+
+echo "keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone"
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 sleep 2
+echo "keystone-manage credential_setup --keystone-user keystone --keystone-group keystone"
 keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 sleep 2
 echo "Check for the Bootstrap....."
 
 echo "#########BOOTSTRAP THE IDENTITY SERVICE################"
+
+
+echo "keystone-manage bootstrap --bootstrap-password redhat --bootstrap-admin-url http://controller:5000/v3/ --bootstrap-internal-url http://controller:5000/v3/ --bootstrap-public-url http://controller:5000/v3/ --bootstrap-region-id RegionOne"
 
 keystone-manage bootstrap --bootstrap-password redhat --bootstrap-admin-url http://controller:5000/v3/ --bootstrap-internal-url http://controller:5000/v3/ --bootstrap-public-url http://controller:5000/v3/ --bootstrap-region-id RegionOne
   
