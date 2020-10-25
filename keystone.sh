@@ -35,40 +35,47 @@ echo "Populate The Identity Service"
 su -s /bin/sh -c "keystone-manage db_sync" keystone
 echo "Database Populated for keystone!!!!!"
 sleep 5
-<<'COMMENTS'
+
 echo "######################INITIALIZE THE FERNET SETUP##############"
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 sleep 2
 keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 sleep 2
+echo "Check for the Bootstrap....."
 
 echo "#########BOOTSTRAP THE IDENTITY SERVICE################"
 
-keystone-manage bootstrap --bootstrap-password $COMMON_PASS \
-  --bootstrap-admin-url http://controller:5000/v3/ \
-  --bootstrap-internal-url http://controller:5000/v3/ \
-  --bootstrap-public-url http://controller:5000/v3/ \
-  --bootstrap-region-id RegionOne
-  
-  echo "DONE WITH THE BOOTSTRAP........."
-  echo "#######################CONFIGURE APACHE HTTP SERVER#################"
+keystone-manage bootstrap --bootstrap-password redhat --bootstrap-admin-url http://controller:5000/v3/ --bootstrap-internal-url http://controller:5000/v3/ --bootstrap-public-url http://controller:5000/v3/ --bootstrap-region-id RegionOne
   
 
+  echo "DONE WITH THE BOOTSTRAP........."
+
+  echo "#######################CONFIGURE APACHE HTTP SERVER#################"
+
   grep -q "^ServerName controller" /etc/apache2/apache2.conf || sed -i '$ a ServerName controller' /etc/apache2/apache2.conf
-  
+ echo "DONE CONFIGURING APACHE2......" 
   sleep 2
   echo "restart apache2"
   service apache2 restart
   sleep 5
   echo "DONE WITH SETTING APACHE HTTP"
 
+echo "CONFIGURING ADMINISTRITIVE ACCOUNT......"
+
   export OS_USERNAME=admin
+ echo "$OS_USERNAME"
   export OS_PASSWORD=$COMMON_PASS
+ echo " $OS_PASSWORD"
   export OS_PROJECT_NAME=admin
+ echo " $OS_PROJECT_NAME"
   export OS_USER_DOMAIN_NAME=Default
+  echo "$OS_USER_DOMAIN_NAME"
   export OS_PROJECT_DOMAIN_NAME=Default
+ echo " $OS_PROJECT_DOMAIN_NAME"
   export OS_AUTH_URL=http://controller:5000/v3
+ echo " $OS_AUTH_URL"
   export OS_IDENTITY_API_VERSION=3
+ echo " $OS_IDENTITY_API_VERSION"
 
   #########ADMIN USER##################  
   echo "export OS_PROJECT_DOMAIN_NAME=Default
@@ -95,38 +102,67 @@ export OS_IMAGE_API_VERSION=2" > demo-openrc
 # remove starting space
 sed -i 's/^[\t]*//g' demo-openrc
 
-
+echo "DONE WITH CREAING ADMIN AND DEMO ACCOUNT"
+sleep 2
 echo "#####CREATE domain, project,and user roles ########### "
-source /root/autovm/admin-openrc
 
+source ./admin-openrc
+echo "$OS_PROJECT_DOMAIN_NAME"
+echo "$OS_PROJECT_NAME"
+echo "$OS_USER_DOMAIN_NAME"
+echo "$OS_USERNAME"
+echo "$OS_PASSWORD"
+echo "$OS_AUTH_URL"
+echo "$OS_IDENTITY_API_VERSION"
+echo "$OS_IMAGE_API_VERSION"
+
+echo "openstack domain create --description "An Example Domain" example"
 openstack domain create --description "An Example Domain" example
 sleep 2
+echo "openstack project create --domain default --description "Service Project" service"
 openstack project create --domain default --description "Service Project" service
-sleep 2
 
-
+#sleep 5
 #####DEMO PROJECT for non-Admin tasks##########
+sleep 3
+echo "openstack project create --domain default --description "Demo Project" myproject"
 openstack project create --domain default --description "Demo Project" myproject
-
+sleep 5
+echo "openstack user create --domain default --password $COMMON_PASS myuser"
 openstack user create --domain default --password $COMMON_PASS myuser
+sleep 5
+echo "openstack role create myrole"
 openstack role create myrole
+sleep 5
+echo "openstack role add --project myproject --user myuser myrole"
 openstack role add --project myproject --user myuser myrole
 
 #####Verification Operations of the Identity SERVICE################
 
 unset OS_AUTH_URL OS_PASSWORD
+echo "unset= $OS_AUTH_URL $OS_PASSWORD"
 
 ERROR=""
+echo "openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin --os-password $COMMON_PASS token issue"
 openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin --os-password $COMMON_PASS token issue || ERROR="YES"
 
 ####Request Authentication token for myuser user###############
-
+echo "openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name myproject --os-username myuser --os-password $COMMON_PASS token issue"
 openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name myproject --os-username myuser --os-password $COMMON_PASS token issue || ERROR="YES"
 
 #####Using the Client Scripts Request Authentication#########
 
 source ./admin-openrc
+echo "$OS_PROJECT_DOMAIN_NAME"
+echo "$OS_PROJECT_NAME"
+echo "$OS_USER_DOMAIN_NAME"
+echo "$OS_USERNAME"
+echo "$OS_PASSWORD"
+echo "$OS_AUTH_URL"
+echo "$OS_IDENTITY_API_VERSION"
+echo "$OS_IMAGE_API_VERSION"
   
+echo "openstack token issue" 
 openstack token issue || ERROR="YES"
 
 if [ -z $ERROR ];then
@@ -136,13 +172,10 @@ if [ -z $ERROR ];then
 			exit
 		fi
 
-	else
 		echo -e "\n\e[36m[[Keystone]: SERVICE IS ALREADY CONFIGURED, IGNORING DUPLICATION..\e[0m\n"
-	fi
 	
 
 	echo -e "\n\n\n\e[36m######################[ KEYSTONE ] : SERVICE DEPLOYED SUCCESFULLY #####################\e[0m\n\n\n"
-COMMENTS
   
 }
 keystone_service
