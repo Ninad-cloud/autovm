@@ -16,14 +16,15 @@ EOF
 
 sleep 5
 PKG_FAILED=0
-apt install keystone -y || || PKG_FAILED=1
+apt install keystone -y || PKG_FAILED=1
 		if [ $PKG_FAILED -gt 0 ];then
 			echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
 			exit
 		else
 			echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"		
 		fi
-<<'COMMENTS'
+
+
 echo "MODIFY keystone CONFIGURATION"
 grep -q "^connection = mysql+pymysql" /etc/keystone/keystone.conf || sed -i '0,/^connection = sqlite/ s||connection = mysql+pymysql://keystone:'$COMMON_PASS'@controller/keystone\n#&|' /etc/keystone/keystone.conf
 
@@ -51,9 +52,11 @@ keystone-manage bootstrap --bootstrap-password $COMMON_PASS \
   
   echo "#######################CONFIGURE APACHE HTTP SERVER#################"
   
+
   grep -q "^ServerName controller" /etc/apache2/apache2.conf || sed -i '$ a ServerName controller' /etc/apache2/apache2.conf
   
   sleep 2
+  echo "restart apache2"
   service apache2 restart
   sleep 5
   echo "DONE WITH SETTING APACHE HTTP"
@@ -93,11 +96,14 @@ sed -i 's/^[\t]*//g' demo-openrc
 
 
 echo "#####CREATE domain, project,and user roles ########### "
+source /root/autovm/admin-openrc
 
 openstack domain create --description "An Example Domain" example
 sleep 2
 openstack project create --domain default --description "Service Project" service
 sleep 2
+
+
 #####DEMO PROJECT for non-Admin tasks##########
 openstack project create --domain default --description "Demo Project" myproject
 
@@ -120,7 +126,7 @@ openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Defau
 source ./admin-openrc
   
 openstack token issue
-COMMENTS
 
   
 }
+keystone_service
