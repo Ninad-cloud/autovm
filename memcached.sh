@@ -28,7 +28,7 @@ Memcached_unconfig(){
     sed -i 's/^-l '$CONTROLLER_MGT_IP'/-l 127.0.0.1/' /etc/memcached.conf
     service memcached restart
 
-    echo -e "\n\n\e[36m###################### MEMCACHED UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IS DONE ###################### \e[0m\n"
+    echo -e "\n\n\e[36m######## MEMCACHED UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IS DONE ######## \e[0m\n"
 
 }
 

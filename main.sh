@@ -65,4 +65,5 @@ EOF
 #source /root/autovm/generic_pkg.sh
 #source /root/autovm/mysql_config.sh
 #source /root/autovm/rabbitmq.sh
-source /root/autovm/etcd.sh
+source /root/autovm/memcached.sh
+#source /root/autovm/etcd.sh
