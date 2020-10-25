@@ -62,3 +62,4 @@ ssh-keygen_gen
 add_ssh-keygen
 config_Hostnames
 source /root/autovm/ntp_install.sh
+source /root/autovm/generic_pkg.sh
