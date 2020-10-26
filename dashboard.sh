@@ -25,7 +25,8 @@ Horizon_config(){
 	echo "......Configuration on $filepath1........"
 	
 #	sed -i 's/^OPENSTACK_HOST = "127.0.0.1"/OPENSTACK_HOST = "controller"/' $filepath1 
-	sed -i 's/^ALLOWED_HOSTS = '\''\*'\''/ ALLOWED_HOSTS = ['\''*'\'', ]/' $filepath1 
+	#sed -i '/#pool 2.*/a
+	sed -i '/#ALLOWED_HOSTS = */a ALLOWED_HOSTS = ['\''*'\'', ]/' $filepath1 
 	
 <<'COMMENTS'
 	grep -q "^SESSION_ENGINE =" $filepath1 || sed -i '/^CACHES =/ i SESSION_ENGINE = '\''django.contrib.sessions.backends.cache'\''' $filepath1
