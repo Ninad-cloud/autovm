@@ -4,7 +4,7 @@ source /root/autovm/globalvar.sh
 
 Horizon_config(){
 
-
+<<'COMMENTS'
 	echo -e "\n\e[36m######### [ HORIZON ] : DEPLOY HORIOZON ON CONTROLLER NODE ########### \e[0m\n"
 
 	echo "INSTALLATION AND CONFIGURATION OF HORIZON STARTED!!!!"
@@ -18,21 +18,21 @@ Horizon_config(){
 	fi
 
 	sleep 20
-	
+COMMENTS
 	filepath1='/etc/openstack-dashboard/local_settings.py'
 # Backup the original .conf file
-	cp $filepath1 ${filepath1}.bakup
+#	cp $filepath1 ${filepath1}.bakup
 	echo "......Configuration on $filepath1........"
-	
-#	sed -i 's/^OPENSTACK_HOST = "127.0.0.1"/OPENSTACK_HOST = "controller"/' $filepath1 
-	#sed -i '/#pool 2.*/a
-	sed -i '/#ALLOWED_HOSTS = */a ALLOWED_HOSTS = ['\''*'\'', ]/' $filepath1 
-	
-<<'COMMENTS'
-	grep -q "^SESSION_ENGINE =" $filepath1 || sed -i '/^CACHES =/ i SESSION_ENGINE = '\''django.contrib.sessions.backends.cache'\''' $filepath1
-	sed -i 's/'\''LOCATION'\'': '\''127.0.0.1/'\''LOCATION'\'': '\''controller/' $file
 
-	sed -i 's|^OPENSTACK_KEYSTONE_URL = "http:\/\/%s:5000\/v2.0"|OPENSTACK_KEYSTONE_URL = "http:\/\/%s:5000\/v3"|' $filepath1
+<<'COMMENTS'	
+	sed -i 's/^OPENSTACK_HOST = "127.0.0.1"/OPENSTACK_HOST = "controller"/' $filepath1 
+
+	sed -i 's/^OPENSTACK_KEYSTONE_DEFAULT_ROLE = "_member_"/OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"/' $filepath1
+	sed -i '/#ALLOWED_HOSTS = */a ALLOWED_HOSTS = ['\''*'\'', ]' $filepath1 
+	
+	grep -q "^SESSION_ENGINE =" $filepath1 || sed -i '/^CACHES =/ i SESSION_ENGINE = '\''django.contrib.sessions.backends.cache'\''' $filepath1
+	sed -i 's/'\''LOCATION'\'': '\''127.0.0.1/'\''LOCATION'\'': '\''controller/' $filepath1
+
 
 	grep -q "^OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True" $filepath1 || \
 	sed -i '/^#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT/ a OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True' $filepath1
@@ -40,31 +40,33 @@ Horizon_config(){
 	grep -q "^OPENSTACK_API_VERSIONS" $filepath1 || \
 	sed -i '/^#OPENSTACK_API_VERSIONS/ i OPENSTACK_API_VERSIONS = {\n"identity": 3,\n"image": 2,\n"volume": 3,\n}\n' $filepath1
 
-    sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN/ s/#//' $filepath1
+COMMENTS
 
-	sed -i 's/^OPENSTACK_KEYSTONE_DEFAULT_ROLE = "_member_"/OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"/' $filepath1
+      sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN/ s/#//' $filepath1
+
+	sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = / a OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"' $filepath1
 	
 	timezone=`cat /etc/timezone`
 	echo "Timezone is $timezone"
-	
-	sed -i 's|^TIME_ZONE = "UTC"|TIME_ZONE = "'$timezone'"|' $file
+
+	sed -i 's|^TIME_ZONE = "UTC"|TIME_ZONE = "'$timezone'"|' $filepath1
 
 	sleep 2
-	#Handle the bug, or else dashboard doesn't load
-	grep -q "^WSGIApplicationGroup %{GLOBAL}" /etc/apache2/conf-enabled/openstack-dashboard.conf || \
-	sed -i '/^WSGIProcessGroup horizon/ a WSGIApplicationGroup %{GLOBAL}' /etc/apache2/conf-enabled/openstack-dashboard.conf
+#	#Handle the bug, or else dashboard doesn't load
+#	grep -q "^WSGIApplicationGroup %{GLOBAL}" /etc/apache2/conf-enabled/openstack-dashboard.conf || \
+#	sed -i '/^WSGIProcessGroup horizon/ a WSGIApplicationGroup %{GLOBAL}' /etc/apache2/conf-enabled/openstack-dashboard.conf
 
-	sleep 2
+#	sleep 2
 	
-	echo "restart apache2"
-	echo "service apache2 restart"
-	service apache2 restart
-	sleep 5
+#	echo "restart apache2"
+#	echo "service apache2 restart"
+#	service apache2 restart
+#	sleep 5
 	
-	echo -e "\n\e[36mAccess the dashboard using a web browser at http://controller/horizon\e[0m\n"
+#	echo -e "\n\e[36mAccess the dashboard using a web browser at http://controller/horizon\e[0m\n"
 
-	echo -e "\n\e[36m######### [ HORIZON ] : SUCCESSFULLY DEPLOYED ########### \e[0m\n"
-COMMENTS
+#	echo -e "\n\e[36m######### [ HORIZON ] : SUCCESSFULLY DEPLOYED ########### \e[0m\n"
+#COMMENTS
 
 }
 Horizon_config
