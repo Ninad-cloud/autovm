@@ -70,18 +70,18 @@ echo "INSTALLATION AND CONFIGURATION OF PlACEMENT STARTED!!!!"
 
 	filepath1=' /etc/placement/placement.conf'
 # Backup the original .conf file
-	cp $filepath1 ${filepath1}.bakup
+#	cp $filepath1 ${filepath1}.bakup
 	echo "......Configuration on $filepath1........"
+
 	
+	sed -i 's/^connection = sqlite/#&/' $filepath1
 	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[placement_database\]/ a connection = mysql+pymysql://placement:'$COMMON_PASS'@controller/placement' $filepath1
 	
-	grep -q "^auth_strategy = keystone
-" $filepath1 || \
-	sed -i '/^\[api\]/ a auth_strategy = keystone' $filepath1
+	grep -q "^auth_strategy = keystone" $filepath1 || sed -i '/^\[api\]/ a auth_strategy = keystone' $filepath1
 	
-	grep -q "^auth_url = http://controller:5000" $filepath1 || \
-	sed -i '/^\[keystone_authtoken\]/ a auth_url = http://controller:5000/v3\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nproject_name = service\nusername = placement\npassword = '$COMMON_PASS'' $filepath1
-	
+	grep -q "^auth_url = http://controller:5000" $filepath1 || sed -i '/^\[keystone_authtoken\]/ a auth_url = http://controller:5000/v3\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nproject_name = service\nusername = placement\npassword = '$COMMON_PASS'' $filepath1
+
+
 	sleep 5
 	####Sync the Database###
 	echo "Populate the Placement Database......"
@@ -114,7 +114,7 @@ echo "INSTALLATION AND CONFIGURATION OF PlACEMENT STARTED!!!!"
 	
 	echo "Install osc-placement to check against placement API..."
 	PKG_FAILED=0
-	pip install osc-placement -y || PKG_FAILED=1
+	pip install osc-placement || PKG_FAILED=1
 	if [ $PKG_FAILED -gt 0 ];then
 		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
 		exit
