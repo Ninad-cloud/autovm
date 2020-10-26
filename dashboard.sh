@@ -42,10 +42,16 @@ COMMENTS
 
 COMMENTS
 
-      sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN/ s/#//' $filepath1
+     # sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN/ s/#//' $filepath1
 
-	sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = / a OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"' $filepath1
+	sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = / a OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"/' $filepath1
 	
+	sed -i 's/^'enable_router': True,/'enable_router': False,/' $filepath1
+	sed -i 's/^'enable_quotas': True,/'enable_quotas': False,/' $filepath1
+	sed -i 's/^'enable_ipv6': True,/'enable_ipv6': False,/' $filepath1
+	sed -i 's/^'enable_fip_topology_check': False,/'enable_fip_topology_check': False,\n'enable_lb': False,\n'enable_firewall': False,\n'enable_vpn': False,/' $filepath1
+	
+<<'COMMENTS	
 	timezone=`cat /etc/timezone`
 	echo "Timezone is $timezone"
 
@@ -66,7 +72,7 @@ COMMENTS
 #	echo -e "\n\e[36mAccess the dashboard using a web browser at http://controller/horizon\e[0m\n"
 
 #	echo -e "\n\e[36m######### [ HORIZON ] : SUCCESSFULLY DEPLOYED ########### \e[0m\n"
-#COMMENTS
+COMMENTS
 
 }
 Horizon_config
