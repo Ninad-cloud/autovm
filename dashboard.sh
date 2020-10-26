@@ -1,4 +1,9 @@
+#!/bin/sh
+source /root/autovm/globalvar.sh
+
+
 Horizon_config(){
+
 
 	echo -e "\n\e[36m######### [ HORIZON ] : DEPLOY HORIOZON ON CONTROLLER NODE ########### \e[0m\n"
 
@@ -19,10 +24,10 @@ Horizon_config(){
 	cp $filepath1 ${filepath1}.bakup
 	echo "......Configuration on $filepath1........"
 	
-	sed -i 's/^OPENSTACK_HOST = "127.0.0.1"/OPENSTACK_HOST = "controller"/' $filepath1 
-	sed -i 's/^ALLOWED_HOSTS = '\''\*'\''/ALLOWED_HOSTS = ['\''*'\'', ]/' $filepath1 
+#	sed -i 's/^OPENSTACK_HOST = "127.0.0.1"/OPENSTACK_HOST = "controller"/' $filepath1 
+	sed -i 's/^ALLOWED_HOSTS = '\''\*'\''/ ALLOWED_HOSTS = ['\''*'\'', ]/' $filepath1 
 	
-
+<<'COMMENTS'
 	grep -q "^SESSION_ENGINE =" $filepath1 || sed -i '/^CACHES =/ i SESSION_ENGINE = '\''django.contrib.sessions.backends.cache'\''' $filepath1
 	sed -i 's/'\''LOCATION'\'': '\''127.0.0.1/'\''LOCATION'\'': '\''controller/' $file
 
@@ -58,5 +63,7 @@ Horizon_config(){
 	echo -e "\n\e[36mAccess the dashboard using a web browser at http://controller/horizon\e[0m\n"
 
 	echo -e "\n\e[36m######### [ HORIZON ] : SUCCESSFULLY DEPLOYED ########### \e[0m\n"
+COMMENTS
 
 }
+Horizon_config
