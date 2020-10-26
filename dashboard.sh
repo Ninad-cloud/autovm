@@ -38,20 +38,21 @@ COMMENTS
 	sed -i '/^#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT/ a OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True' $filepath1
 
 	grep -q "^OPENSTACK_API_VERSIONS" $filepath1 || \
-	sed -i '/^#OPENSTACK_API_VERSIONS/ i OPENSTACK_API_VERSIONS = {\n"identity": 3,\n"image": 2,\n"volume": 3,\n}\n' $filepath1
+	sed -i '/^#OPENSTACK_API_VERSIONS/ i OPENSTACK_API_VERSIONS = {\n\t"identity": 3,\n\t"image": 2,\n\t"volume": 3,\n}\n' $filepath1
 
 COMMENTS
 
      # sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN/ s/#//' $filepath1
 
-	sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = / a OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"/' $filepath1
+#	sed -i '/^#OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = / a OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"/' $filepath1
 	
-	sed -i 's/^'enable_router': True,/'enable_router': False,/' $filepath1
-	sed -i 's/^'enable_quotas': True,/'enable_quotas': False,/' $filepath1
-	sed -i 's/^'enable_ipv6': True,/'enable_ipv6': False,/' $filepath1
-	sed -i 's/^'enable_fip_topology_check': False,/'enable_fip_topology_check': False,\n'enable_lb': False,\n'enable_firewall': False,\n'enable_vpn': False,/' $filepath1
+	sed -i '/'enable_router'/ s/True/ False/' $filepath1
+	sed -i '/'enable_quotas'/ s/True/ False/' $filepath1
+	sed -i '/'enable_ipv6'/ s/True/ False/' $filepath1
+	sed -i '/'enable_fip_topology_check'/ s/True/ False/' $filepath1
+	sed -i '/*enable_fip_topology_check*/ a \t'enable_lb': False,\n\t'enable_firewall': False,\n\t'enable_vpn': False,' $filepath1
 	
-<<'COMMENTS	
+<<'COMMENTS'	
 	timezone=`cat /etc/timezone`
 	echo "Timezone is $timezone"
 
