@@ -6,11 +6,9 @@ echo "${nodes[@]}"
 Nova_Installtion(){
 	
 	echo -e "\n\n\e[36m#########[ DEPLOYING COMPUTE PART ON CONTROLLER NODE ]######### \e[0m\n"
-	sleep 30
-	ERROR=""
 	
 	echo -e "\n\e[36m[CONFIGURATION THE MYSQL DB ] \e[0m\n"
-	
+
 	mysql << EOF
 	CREATE DATABASE nova_api;
 	CREATE DATABASE nova;
@@ -23,6 +21,7 @@ Nova_Installtion(){
 	GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%' IDENTIFIED BY '$COMMON_PASS';
 EOF
 	
+
 	sleep 5
 	###Source the admin credentials
 	source ./admin-openrc
@@ -74,11 +73,12 @@ Nova_config(){
 	
 	###Installing Packages####
 	echo "INSTALLATION AND CONFIGUATION OF COMPUTE SERVICE ON CONTROLLER NODE STARTED....."
-	
+
 	PKG_FAILED=0
-	apt install nova-api nova-conductor nova-novncproxy nova-scheduler -y || PKG_FAILED=1
+	apt install nova-api nova-conductor nova-novncproxy nova-scheduler nova-consoleauth -y || PKG_FAILED=1
 	if [ $PKG_FAILED -gt 0 ];then
 		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
+		apt update
 		exit
 	else
 		echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"
@@ -91,25 +91,22 @@ Nova_config(){
 	
 	cp $filepath1 ${filepath1}.bak
 
+	echo "--------STARTED CONFIGURATION--------"
 	#comment the log_dir line under [DEFAULT]
 	sed -i 's/^log_dir=*/#&/' $filepath1
 	
-	grep -q "^transport_url =" $filepath1 || \
-	sed -i '/^\[DEFAULT\]/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$CONTROLLER_MGT_IP'\nuse_neutron = true\nfirewall_driver = nova.virt.firewall.NoopFirewallDriver' $filepath1
+	sed -i '/^state_path =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$CONTROLLER_MGT_IP'\nuse_neutron = true\nfirewall_driver = nova.virt.firewall.NoopFirewallDriver' $filepath1
 	
-	
-	#grep -q "^\[api_database\]" $filepath1 || sed -i '/^\[api_database\]/,/^\[/ {s#^connection = .*#connection = mysql+pymysql://nova:'$COMMON_PASS'@controller/nova_api#g}' $filepath1
 	
 	sed -i 's/^connection = sqlite/#&/' $filepath1
 	
 	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[api_database\]/ a connection = mysql+pymysql://nova:'$COMMON_PASS'@controller/nova_api' $filepath1
 	
-	
-	#grep -q "^\[database\]" $filepath1 || sed -i '/^\[database\]/,/^\[/ {s#^connection = .*#connection = mysql+pymysql://nova:'$COMMON_PASS'@controller/nova#g}' $filepath1
-	
-	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://nova:'$COMMON_PASS'@controller/nova' $filepath1
-	
-	grep -q "^\[api\]" $filepath1 || sed -i '$ a [api]\nauth_strategy = keystone\n' $filepath1
+
+	sed -i '/^\[database\]/ a connection = mysql+pymysql://nova:'$COMMON_PASS'@controller/nova' $filepath1
+
+
+	sed -i '/^\[api]/ a auth_strategy = keystone\n' $filepath1
 	
 	
 	grep -q "^auth_url = http://controller:5000" $filepath1 || \
@@ -122,13 +119,14 @@ Nova_config(){
 	sed -i '/^\[glance\]/ a api_servers = http://controller:9292' $filepath1
 	
 	grep -q "^lock_path" $filepath1 || \
+	grep -q "^lock_path" $filepath1 || \
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/nova/tmp' $filepath1
 	
 	
 	sed -i 's/^os_region_name =/#&/' $filepath1
 	grep -q "^region_name =" $filepath1 || \
 	sed -i '/^\[placement\]/ a region_name = RegionOne\nproject_domain_name = Default\nproject_name = service\nauth_type = password\nuser_domain_name = Default\nauth_url = http://controller:5000/v3\nusername = placement\npassword = '$COMMON_PASS'' $filepath1
-	
+
 	sleep 2
 	
 	echo "POPULATE THE nova-api DATABASE...."
@@ -178,7 +176,8 @@ Nova_config(){
 	echo "service nova-novncproxy restart"
 	service nova-novncproxy restart
 	
+
 }
 
-Nova_Installtion
-Nova_config
+#Nova_Installtion
+#Nova_config
