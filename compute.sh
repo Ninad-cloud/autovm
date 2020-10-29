@@ -118,7 +118,7 @@ Nova_config(){
 	grep -q "^api_servers" $filepath1 || \
 	sed -i '/^\[glance\]/ a api_servers = http://controller:9292' $filepath1
 	
-	grep -q "^lock_path" $filepath1 || \
+	#grep -q "^lock_path" $filepath1 || \
 	grep -q "^lock_path" $filepath1 || \
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/nova/tmp' $filepath1
 	
@@ -179,5 +179,138 @@ Nova_config(){
 
 }
 
+Nova_config_compute(){
+
+echo -e "\n\e[36m######### [ COMPUTE ] : CONFIGURING THE NOVA SERVICE ON COMPUTE NODE ##### \e[0m\n"
+echo "$nodes[0]"
+chk_Connectivity $nodes[0]
+
+echo "#######[ INSTALL AND CONFIGURATION OF NOVA ON COMPUTE NODE ] #########"
+PKG_FAILED=0
+	
+	ssh root@'${nodes[0]}' apt install nova-compute -y || PKG_FAILED=1
+	if [ $PKG_FAILED -gt 0 ];then
+		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
+		apt update
+		exit
+	else
+		echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"
+	fi
+	
+	sleep 10
+	
+	filepath1='/etc/nova/nova.conf'
+	# Backup the original .conf file
+	
+	cp $filepath1 ${filepath1}.bak
+
+	ssh root@$COMPUTE_MGT_IP << EOF
+	
+	#sed -i '/^state_path =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$COMPUTE_MGT_IP'\nuse_neutron = true\nfirewall_driver = nova.virt.firewall.NoopFirewallDriver' $filepath1
+	
+	sed -i 's/^connection = sqlite/#&/' $filepath1
+	sed -i '/^\[database\]/ a connection = mysql+pymysql://nova:'$COMMON_PASS'@controller/nova' $filepath1
+	
+	sed -i '/^\[api]/ a auth_strategy = keystone\n' $filepath1
+	
+	grep -q "^auth_url = http://controller:5000" $filepath1 || \
+	sed -i '/^\[keystone_authtoken\]/ a auth_url = http://controller:5000/v3\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nproject_name = service\nusername = nova\npassword = '$COMMON_PASS'' $filepath1
+	
+	grep -q "^enabled_true =" $filepath1 || \
+	sed -i '/^\[vnc\]/ a enabled = true\nserver_listen = $my_ip\nserver_listen = 0.0.0.0\nserver_proxyclient_address = $my_ip\nnovncproxy_base_url = http://controller:6080/vnc_auto.html' $filepath1
+	
+	grep -q "^api_servers" $filepath1 || \
+	sed -i '/^\[glance\]/ a api_servers = http://controller:9292' $filepath1
+	
+	grep -q "^lock_path" $filepath1 || \
+	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/nova/tmp' $filepath1
+	
+	#sed -i 's/^os_region_name =/#&/' $filepath1
+	grep -q "^region_name =" $filepath1 || \
+	sed -i '/^\[placement\]/ a region_name = RegionOne\nproject_domain_name = Default\nproject_name = service\nauth_type = password\nuser_domain_name = Default\nauth_url = http://controller:5000/v3\nusername = placement\npassword = '$COMMON_PASS'' $filepath1
+
+	
+	if [[ $(egrep -c '(vmx|svm)' /proc/cpuinfo) = "0" ]];then
+		sed -i 's/^virt_type=kvm/virt_type = qemu/' "/etc/nova/nova-compute.conf"
+	fi
+	
+	echo "---Restarting Nova-Compute Service----"
+	echo "service nova-compute restart" 
+	service nova-compute restart
+	sleep 5
+EOF
+	
+}	
+
+verify_compute_controller(){
+
+echo "----Verify Successful INstallation of Compute Service on Controller Node-----"
+###Source the admin credentials
+source ./admin-openrc
+echo "$OS_PROJECT_DOMAIN_NAME"
+echo "$OS_PROJECT_NAME"
+echo "$OS_USER_DOMAIN_NAME"
+echo "$OS_USERNAME"
+echo "$OS_PASSWORD"
+echo "$OS_AUTH_URL"
+echo "$OS_IDENTITY_API_VERSION"
+echo "$OS_IMAGE_API_VERSION"
+sleep 2
+
+echo "Confirm There Are Compute Hosts In The Database"
+echo "openstack compute service list --service nova-compute"
+openstack compute service list --service nova-compute
+sleep 5
+
+echo "Discover Compute Host"
+echo "su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova"
+su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
+
+sleep 5
+
+source ./admin-openrc
+echo "$OS_PROJECT_DOMAIN_NAME"
+echo "$OS_PROJECT_NAME"
+echo "$OS_USER_DOMAIN_NAME"
+echo "$OS_USERNAME"
+echo "$OS_PASSWORD"
+echo "$OS_AUTH_URL"
+echo "$OS_IDENTITY_API_VERSION"
+echo "$OS_IMAGE_API_VERSION"
+sleep 2
+
+if openstack compute service list | grep "up" | grep `cat /etc/hosts | grep $1 | awk '{print $2}'`;then
+	service_status="1"
+	break
+fi
+
+if [ $service_status -gt 0 ]; then
+	echo "Installation Success"
+else
+	echo "Installation Failed"
+	echo -e "\n\n\n\e[31m######[ COMPUTE_ON_COMPUTE ] : FAILED COMPUTE SERVICE ######## \e[0m\n"
+	exit
+fi
+
+echo -e "\n\n\e[36m##### [ COMPUTE_SERVICE ] : SUCCESFULLY DEPLOYED COMPUTE NODE #### \e[0m\n\n"
+
+#####Verify All the Operation#####
+
+echo "openstack catalog list"
+openstack catalog list
+sleep 2
+
+echo "openstack image list"
+openstack image list
+sleep 2
+
+echo "nova-status upgrade check"
+nova-status upgrade check
+sleep 2
+
+
+}
 #Nova_Installtion
 #Nova_config
+Nova_config_compute
+#verify_compute_controller
