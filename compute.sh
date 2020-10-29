@@ -1,6 +1,7 @@
-##############[ DEPLOYING COMUTE SERVICE ]############################
+##############[ DEPLOYING COMUTE SERVICE ON CONTROLLER AND COMPUTE1 NODE ]#######################
 #!/bin/sh
 source /root/autovm/globalvar.sh
+source /root/autovm/chk_Connectivity.sh
 echo "${nodes[@]}"
 
 Nova_Installtion(){
@@ -69,7 +70,7 @@ EOF
 }
 
 
-Nova_config(){
+Nova_config_controller(){
 	
 	###Installing Packages####
 	echo "INSTALLATION AND CONFIGUATION OF COMPUTE SERVICE ON CONTROLLER NODE STARTED....."
@@ -183,12 +184,10 @@ Nova_config_compute(){
 
 echo -e "\n\e[36m######### [ COMPUTE ] : CONFIGURING THE NOVA SERVICE ON COMPUTE NODE ##### \e[0m\n"
 echo "$nodes[0]"
-chk_Connectivity $nodes[0]
-
 echo "#######[ INSTALL AND CONFIGURATION OF NOVA ON COMPUTE NODE ] #########"
 PKG_FAILED=0
 	
-	ssh root@'${nodes[0]}' apt install nova-compute -y || PKG_FAILED=1
+	ssh root@$COMPUTE1_MGT_IP apt install nova-compute -y || PKG_FAILED=1
 	if [ $PKG_FAILED -gt 0 ];then
 		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
 		apt update
@@ -198,15 +197,17 @@ PKG_FAILED=0
 	fi
 	
 	sleep 10
-	
+
 	filepath1='/etc/nova/nova.conf'
-	# Backup the original .conf file
+
+	ssh root@$COMPUTE1_MGT_IP << COMMANDS
 	
+	#Backup the original .conf file
+
 	cp $filepath1 ${filepath1}.bak
 
-	ssh root@$COMPUTE_MGT_IP << EOF
-	
-	#sed -i '/^state_path =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$COMPUTE_MGT_IP'\nuse_neutron = true\nfirewall_driver = nova.virt.firewall.NoopFirewallDriver' $filepath1
+	sed -i 's/^log_dir=*/#&/' $filepath1
+	sed -i '/^state_path =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$COMPUTE1_MGT_IP'\nuse_neutron = true\nfirewall_driver = nova.virt.firewall.NoopFirewallDriver' $filepath1
 	
 	sed -i 's/^connection = sqlite/#&/' $filepath1
 	sed -i '/^\[database\]/ a connection = mysql+pymysql://nova:'$COMMON_PASS'@controller/nova' $filepath1
@@ -217,15 +218,14 @@ PKG_FAILED=0
 	sed -i '/^\[keystone_authtoken\]/ a auth_url = http://controller:5000/v3\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nproject_name = service\nusername = nova\npassword = '$COMMON_PASS'' $filepath1
 	
 	grep -q "^enabled_true =" $filepath1 || \
-	sed -i '/^\[vnc\]/ a enabled = true\nserver_listen = $my_ip\nserver_listen = 0.0.0.0\nserver_proxyclient_address = $my_ip\nnovncproxy_base_url = http://controller:6080/vnc_auto.html' $filepath1
+	sed -i '/^\[vnc\]/ a enabled = true\nserver_listen = 0.0.0.0\nserver_proxyclient_address = '$COMPUTE1_MGT_IP'\nnovncproxy_base_url = http://controller:6080/vnc_auto.html' $filepath1
 	
 	grep -q "^api_servers" $filepath1 || \
 	sed -i '/^\[glance\]/ a api_servers = http://controller:9292' $filepath1
 	
-	grep -q "^lock_path" $filepath1 || \
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/nova/tmp' $filepath1
 	
-	#sed -i 's/^os_region_name =/#&/' $filepath1
+	sed -i 's/^os_region_name =/#&/' $filepath1
 	grep -q "^region_name =" $filepath1 || \
 	sed -i '/^\[placement\]/ a region_name = RegionOne\nproject_domain_name = Default\nproject_name = service\nauth_type = password\nuser_domain_name = Default\nauth_url = http://controller:5000/v3\nusername = placement\npassword = '$COMMON_PASS'' $filepath1
 
@@ -238,7 +238,8 @@ PKG_FAILED=0
 	echo "service nova-compute restart" 
 	service nova-compute restart
 	sleep 5
-EOF
+COMMANDS
+
 	
 }	
 
@@ -255,7 +256,6 @@ echo "$OS_PASSWORD"
 echo "$OS_AUTH_URL"
 echo "$OS_IDENTITY_API_VERSION"
 echo "$OS_IMAGE_API_VERSION"
-sleep 2
 
 echo "Confirm There Are Compute Hosts In The Database"
 echo "openstack compute service list --service nova-compute"
@@ -279,18 +279,7 @@ echo "$OS_IDENTITY_API_VERSION"
 echo "$OS_IMAGE_API_VERSION"
 sleep 2
 
-if openstack compute service list | grep "up" | grep `cat /etc/hosts | grep $1 | awk '{print $2}'`;then
-	service_status="1"
-	break
-fi
-
-if [ $service_status -gt 0 ]; then
-	echo "Installation Success"
-else
-	echo "Installation Failed"
-	echo -e "\n\n\n\e[31m######[ COMPUTE_ON_COMPUTE ] : FAILED COMPUTE SERVICE ######## \e[0m\n"
-	exit
-fi
+openstack compute service list 
 
 echo -e "\n\n\e[36m##### [ COMPUTE_SERVICE ] : SUCCESFULLY DEPLOYED COMPUTE NODE #### \e[0m\n\n"
 
@@ -310,7 +299,7 @@ sleep 2
 
 
 }
-#Nova_Installtion
-#Nova_config
+Nova_Installtion
+Nova_config_controller
 Nova_config_compute
-#verify_compute_controller
+verify_compute_controller
