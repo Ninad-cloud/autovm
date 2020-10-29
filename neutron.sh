@@ -70,7 +70,7 @@ PKG_FAILED=0
 
 	sleep 20
 	
-	filepath1=' /etc/neutron/neutron.conf'
+	filepath1='/etc/neutron/neutron.conf'
 	# Backup the original .conf file
 	
 	cp $filepath1 ${filepath1}.bak
@@ -81,18 +81,19 @@ PKG_FAILED=0
 	
 	
 	sed -i 's/^connection = sqlite/#&/' $filepath1
-	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[api_database\]/ a connection = mysql+pymysql://neutron:'$COMMON_PASS'@controller/neutron' $filepath1
+	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://neutron:'$COMMON_PASS'@controller/neutron' $filepath1
 	
 	
 	grep -q "^www_authenticate_uri = http://controller:5000" $filepath1 || \
 	sed -i '/^\[keystone_authtoken\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = neutron\npassword = '$COMMON_PASS'' $filepath1
 	
-	grep -q "^auth_url = http://controller:5000" $filepath1 || \
+#	grep -q "^auth_url = http://controller:5000" $filepath1 || \
 	sed -i '/^\[nova\]/ a auth_url = http://controller:5000\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nregion_name = RegionOne\nproject_name = service\nusername = nova\npassword = '$COMMON_PASS'' $filepath1
 	
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/neutron/tmp' $filepath1
-	
+
 	sleep 2
+
 	###########[ CONFIGURE THE MODULE LAYER 2 ]#####################
 	echo "---Configure the ML2 Plugin----"
 	
@@ -105,11 +106,13 @@ PKG_FAILED=0
 	
 	sed -i '/^\[ml2\]/ a type_drivers = flat,vlan,vxlan\ntenant_network_types = vxlan\nmechanism_drivers = linuxbridge,l2population\nextension_drivers = port_security' $filepath2
 	
-	sed -i '/^\[ml2_type_flat\]/ a flat_networks = provider\nvni_ranges = 1:1000\n' $filepath2
+	sed -i '/^\[ml2_type_flat\]/ a flat_networks = provider' $filepath2
 	
+	sed -i '/^\[ml2_type_vxlan\]/ a vni_ranges = 1:1000' $filepath2
 	sed -i '/^\[securitygroup\]/ a enable_ipset = true' $filepath2
 	
 	sleep 2
+
 	#########[ CONFIGURE THE LINUX BRIDGE AGENT ]###################
 	echo "---Configure the Linux Bridge Agent----"
 	
@@ -125,6 +128,7 @@ PKG_FAILED=0
 	sed -i '/^\[securitygroup\]/ a enable_security_group = true\nfirewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver' $filepath3
 	
 	sleep 2
+
 	########[ CONFIGURE THE LAYER-3 AGENT ]################
 	echo "The Layer-3 agent for routing and NAT servies for self-service"
 	
@@ -137,6 +141,7 @@ PKG_FAILED=0
 	sed -i '/^\[DEFAULT\]/ a interface_driver = linuxbridge\ndhcp_driver = neutron.agent.linux.dhcp.Dnsmasq\nenable_isolated_metadata = true' /etc/neutron/dhcp_agent.ini
 	
 	sleep 2
+
 	############[ CONFIGURE THE METADATA AGENT ]############
 	echo "---Configuring metadat agent provides credentials to instances---"
 	
@@ -147,7 +152,8 @@ PKG_FAILED=0
 	echo "--Configure the Compute Service to use the Networking---"
 	
 	sed -i '/^\[neutron\]/ a url = http://controller:9696\nauth_url = http://controller:5000\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nregion_name = RegionOne\nproject_name = service\nusername = neutron\npassword = '$COMMON_PASS'\nservice_metadata_proxy = true\nmetadata_proxy_shared_secret = '$ADMIN_TOKEN'' /etc/nova/nova.conf
-	
+
+
 	sleep 2
 	###########[ FINALAIZE THE INSTALLATION ]######################
 	echo "-----Populate The Database----"
@@ -182,7 +188,6 @@ PKG_FAILED=0
 	echo "service neutron-l3-agent restart"
 	service neutron-l3-agent restart
 	sleep 5
-	
 }
 
 Neutron_config_compute(){
@@ -249,11 +254,11 @@ COMMANDS
 
 
 ##########[ VERIFY THE SUCCESSFUK LAUNCH OF THE NEUTRON AGENTS ]########
-echo "openstack network agent list"
-openstack network agent list
-sleep 2
+#echo "openstack network agent list"
+#openstack network agent list
+#sleep 2
 }
 
-Neutron_Installation
-Neutron_Config_controller
+#Neutron_Installation
+#Neutron_Config_controller
 Neutron_config_compute
