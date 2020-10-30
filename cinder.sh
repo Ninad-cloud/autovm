@@ -140,26 +140,35 @@ echo "---Configuration of Block Storage Service on Block1 Node Started......."
 
 	sleep 15
 
+	#vg_present =`ssh root@$BLOCK1_MG_IP vgdisplay | grep cinder-volumes`
 	filepath1='/etc/cinder/cinder.conf'
 	filepath2 ='/etc/lvm/lvm.conf'
 	# Backup the original .conf file
 	
 	#Remote configuration of BLOCK Storage node.
-	ssh -T -t root@$BLOCK1_MGT_IP << COMMANDS
+	ssh root@$BLOCK1_MGT_IP << COMMANDS
 	
-	#cp $filepath1 ${filepath1}.bak
-	#cp $filepath2 ${filepath2}.bak
+	cp $filepath1 ${filepath1}.bak
+	cp $filepath2 ${filepath2}.bak
 	
-	#if [ -z "$vg_exist" ];then
-	#	pvcreate /dev/$BLOCK1_LVM_DISKNAME
-	#	vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
+	#if [ -z "$vg_present" ];then
+		#pvcreate /dev/$BLOCK1_LVM_DISKNAME
+		#vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
 	#else
-	#	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Cinder-Volume Already Exist not creating"
+		#echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Cinder-Volume Already Exist not creating"
 	#fi
+
+	echo "-----pvcreate----"
+	echo "pvcreate /dev/$BLOCK1_LVM_DISKNAME"
+	pvcreate /dev/$BLOCK1_LVM_DISKNAME
+
+	echo "---vgcreate----"
+	echo "vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME"
+	vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
 		
-	#	sed -i 's/filter = \[ \"a\/\.\*\/\" \]/filter = \[ \"a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/' $filepath2
 	#	#sed -i's/filter = \[ \"\a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/filter = \[ \"a\/\.\*\/\" \]/' $filepath2
 	
+	sed -i '/^devices */ a \\tfilter = [ \"a\/'$BLOCK1_LVM_DISKNAME'/\", \"r\/\.\*\/\" ]' filepath2	
 	
 	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Configure cinder configuration file"
 
@@ -170,17 +179,17 @@ echo "---Configuration of Block Storage Service on Block1 Node Started......."
         
 	sed -i '/^#connection = sqlite*/ a [keystone_authtoken]\n\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'\n\n[lvm]\nvolume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver\nvolume_group = cinder-volumes\ntarget_protocol = iscsi\ntarget_helper = tgtadm\n\n[oslo_concurrency]\n\nlock_path = /var/lib/cinder/tmp' $filepath1
 
-#	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Restart the Block Storage volume service"
-#	echo "service tgt restart"
-#	service tgt restart
-#	sleep 2
-#	echo "service cinder-volume restart"
-#	service cinder-volume restart
-#	sleep 2
+	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Restart the Block Storage volume service"
+	echo "service tgt restart"
+	service tgt restart
+	sleep 2
+	echo "service cinder-volume restart"
+	service cinder-volume restart
+	sleep 2
 COMMANDS
 
 }
 
-#Cinder_installation_pre
-#cinder_config_controller
-config_block1
+Cinder_installation_pre
+cinder_config_controller
+#config_block1
