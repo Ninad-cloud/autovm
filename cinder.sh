@@ -84,7 +84,7 @@ PKG_FAILED=0
 	fi
 
 	sleep 20
-	
+
 	filepath1='/etc/cinder/cinder.conf'
 	# Backup the original .conf file
 	
@@ -92,18 +92,14 @@ PKG_FAILED=0
 	
 	echo "---STARTED CONFIGURATION-----"
 
-	sed -i '/^state_path =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$CONTROLLER_MGT_IP'\nauth_strategy = keystone' $filepath1
+	sed -i '/^enabled_backends =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$CONTROLLER_MGT_IP'' $filepath1
 	
 	sed -i 's/^connection = sqlite/#&/' $filepath1
 	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://cinder:'$COMMON_PASS'@controller/cinder' $filepath1
-	
-	grep -q "^www_authenticate_uri = http://controller:5000" $filepath1 || \
-	sed -i '/^\[keystone_authtoken\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'' $filepath1
-	
-	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/neutron/tmp' $filepath1
+
+	sed -i '/^#connection = sqlite*/ a [keystone_authtoken]\n\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'\n\n[oslo_concurrency]\n\nlock_path = /var/lib/cinder/tmp' $filepath1
 	
 	sleep 2
-	
 	echo "----Populate The Database-----"
 	echo "su -s /bin/sh -c "cinder-manage db sync" cinder"
 	su -s /bin/sh -c "cinder-manage db sync" cinder
@@ -143,53 +139,48 @@ echo "---Configuration of Block Storage Service on Block1 Node Started......."
 	fi
 
 	sleep 15
-<<'COMMENTS'
+
 	filepath1='/etc/cinder/cinder.conf'
 	filepath2 ='/etc/lvm/lvm.conf'
 	# Backup the original .conf file
 	
 	#Remote configuration of BLOCK Storage node.
-	#ssh -T -t root@$BLOCK1_MGT_IP << COMMANDS
+	ssh -T -t root@$BLOCK1_MGT_IP << COMMANDS
 	
-	cp $filepath1 ${filepath1}.bak
-	cp $filepath2 ${filepath2}.bak
+	#cp $filepath1 ${filepath1}.bak
+	#cp $filepath2 ${filepath2}.bak
 	
-	if [ -z "$vg_exist" ];then
-			pvcreate /dev/$BLOCK1_LVM_DISKNAME
-			vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
-		else
-			echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Cinder-Volume Already Exist not creating"
-		fi
+	#if [ -z "$vg_exist" ];then
+	#	pvcreate /dev/$BLOCK1_LVM_DISKNAME
+	#	vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
+	#else
+	#	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Cinder-Volume Already Exist not creating"
+	#fi
 		
-		sed -i 's/filter = \[ \"a\/\.\*\/\" \]/filter = \[ \"a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/' $file
-		#sed -i's/filter = \[ \"\a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/filter = \[ \"a\/\.\*\/\" \]/' $file
+	#	sed -i 's/filter = \[ \"a\/\.\*\/\" \]/filter = \[ \"a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/' $filepath2
+	#	#sed -i's/filter = \[ \"\a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/filter = \[ \"a\/\.\*\/\" \]/' $filepath2
 	
 	
 	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Configure cinder configuration file"
 
-	        grep -q "^\[database\]" $filepath1 || \
-        	sed -i '$ a [database]\nconnection = mysql+pymysql://cinder:'$DB_PASS'@controller/cinder' $filepath1
+	sed -i '/^enabled_backends =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$BLOCK1_MGT_IP'\nglance_api_servers = http://controller:9292' $filepath1
 
-        	sed -i '/^\[DEFAULT\]/ a rpc_backend = rabbit\nmy_ip = '$BLOCK1_MGT_IP'\nenabled_backends = lvm\nglance_api_servers = http:\/\/controller:9292' $filepath1
-		
-		`declare -f config_keystone_authtoken`
-        	config_keystone_authtoken $file1 "cinder" $COMMON_PASS
-		`declare -f config_oslo_messaging_rabbit`
-        	config_oslo_messaging_rabbit $file1 $COMMON_PASS
+	sed -i 's/^connection = sqlite/#&/' $filepath1
+	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://cinder:'$COMMON_PASS'@controller/cinder' $filepath1
+        
+	sed -i '/^#connection = sqlite*/ a [keystone_authtoken]\n\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'\n\n[lvm]\nvolume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver\nvolume_group = cinder-volumes\ntarget_protocol = iscsi\ntarget_helper = tgtadm\n\n[oslo_concurrency]\n\nlock_path = /var/lib/cinder/tmp' $filepath1
 
-        	grep -q "^\[oslo_concurrency\]" $file1 || sed -i '$ a [oslo_concurrency]\nlock_path = /var/lib/cinder/tmp' $filepath1
+#	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Restart the Block Storage volume service"
+#	echo "service tgt restart"
+#	service tgt restart
+#	sleep 2
+#	echo "service cinder-volume restart"
+#	service cinder-volume restart
+#	sleep 2
+COMMANDS
 
-		grep -q "^\[lvm\]" $file1 || \
-		sed -i '$ a [lvm]\nvolume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver\nvolume_group = cinder-volumes\niscsi_protocol = iscsi\niscsi_helper = tgtadm' $filepath1
-		
-		echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Restart the Block Storage volume service"
-
-		service tgt restart
-		service cinder-volume restart
-		COMMANDS
-COMMENTS
 }
 
-Cinder_installation_pre
+#Cinder_installation_pre
 #cinder_config_controller
-#config_block1
+config_block1
