@@ -1,3 +1,9 @@
+######################################################################
+##	OPENSTACK STEIN RELEASE AUTOMATION SCRIPT						##
+##				MASTER'S PROJECT									##	 	
+##																	##					
+######################################################################
+
 #!bin/sh
 source /root/autovm/globalvar.sh
 source /root/autovm/chk_Connectivity.sh_b
@@ -60,12 +66,19 @@ EOF
 
 }
 
-#ssh-keygen_gen
-#add_ssh-keygen
-#config_Hostnames
-#source /root/autovm/ntp_install.sh
-#source /root/autovm/generic_pkg.sh
+ssh-keygen_gen
+add_ssh-keygen
+config_Hostnames
+source /root/autovm/ntp_install.sh
+source /root/autovm/generic_pkg.sh
 source /root/autovm/mysql_config.sh
 source /root/autovm/rabbitmq.sh
 source /root/autovm/memcached.sh
 source /root/autovm/etcd.sh
+source /root/autovm/keystone.sh
+source /root/autovm/glance.sh
+source /root/autovm/placement.sh
+source /root/autovm/dashboard.sh
+source /root/autovm/compute.sh
+source /root/autovm/neutron.sh
+source /root/autovm/cinder.sh
