@@ -16,8 +16,9 @@ Memcached_config(){
     sleep 2
     sed -i 's/^-l 127.0.0.1/-l '$CONTROLLER_MGT_IP'/' /etc/memcached.conf
 	sleep 2
+	echo "service memcached restart"	
     service memcached restart
-	sleep 10
+	sleep 5
     echo -e "\n\n\e[36m###################### MEMCACHED INSTALL AND CONFIGURE ON CONTROLLER NODE IS DONE ###################### \e[0m\n"
 
 }

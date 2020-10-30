@@ -76,7 +76,7 @@ Nova_config_controller(){
 	echo "INSTALLATION AND CONFIGUATION OF COMPUTE SERVICE ON CONTROLLER NODE STARTED....."
 
 	PKG_FAILED=0
-	apt install nova-api nova-conductor nova-novncproxy nova-scheduler nova-consoleauth -y || PKG_FAILED=1
+	apt install nova-api nova-conductor nova-novncproxy nova-scheduler -y || PKG_FAILED=1
 	if [ $PKG_FAILED -gt 0 ];then
 		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
 		apt update
@@ -120,7 +120,7 @@ Nova_config_controller(){
 	sed -i '/^\[glance\]/ a api_servers = http://controller:9292' $filepath1
 	
 	#grep -q "^lock_path" $filepath1 || \
-	grep -q "^lock_path" $filepath1 || \
+#	grep -q "^lock_path" $filepath1 || \
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/nova/tmp' $filepath1
 	
 	
@@ -299,7 +299,7 @@ sleep 2
 
 
 }
-Nova_Installtion
+#Nova_Installtion
 Nova_config_controller
-Nova_config_compute
+#Nova_config_compute
 verify_compute_controller
