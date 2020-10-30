@@ -175,13 +175,13 @@ echo "openstack token issue"
 openstack token issue || ERROR="YES"
 
 if [ -z $ERROR ];then
-			echo -e "\nKeyStone Service Installation Sucessful!"
-		else
-			echo -e "\nKeyStone Service Installation FAILED, EXITING..!"	
-			exit
-		fi
+	echo -e "\nKeyStone Service Installation Sucessful!"
+else
+	echo -e "\nKeyStone Service Installation FAILED, EXITING..!"	
+	exit
+fi
 
-		echo -e "\n\e[36m[[Keystone]: SERVICE IS ALREADY CONFIGURED, IGNORING DUPLICATION..\e[0m\n"
+	echo -e "\n\e[36m[[Keystone]: SERVICE IS ALREADY CONFIGURED, IGNORING DUPLICATION..\e[0m\n"
 	
 
 	echo -e "\n\n\n\e[36m######################[ KEYSTONE ] : SERVICE DEPLOYED SUCCESFULLY #####################\e[0m\n\n\n"

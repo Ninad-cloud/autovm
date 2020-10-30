@@ -1,6 +1,5 @@
 #!/bin/sh
 #CONTROLLER VARiABLES
-#echo "reached 3" > /root/out3.txt
 CONTROLLER_MGT_IP="10.0.0.11"
 CONTROLLER_PUB_IP="10.116.32.8"
 CONTROLLER_HOSTNAME="controller"

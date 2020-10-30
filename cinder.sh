@@ -168,7 +168,7 @@ echo "---Configuration of Block Storage Service on Block1 Node Started......."
 		
 	#	#sed -i's/filter = \[ \"\a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/filter = \[ \"a\/\.\*\/\" \]/' $filepath2
 	
-	sed -i '/^devices */ a \\tfilter = [ \"a\/'$BLOCK1_LVM_DISKNAME'/\", \"r\/\.\*\/\" ]' filepath2	
+	sed -i '/^devices */ a \\\tfilter = [ \"a\/'$BLOCK1_LVM_DISKNAME'/\", \"r\/\.\*\/\" ]' /etc/lvm/lvm.conf 	
 	
 	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Configure cinder configuration file"
 
@@ -187,9 +187,24 @@ echo "---Configuration of Block Storage Service on Block1 Node Started......."
 	service cinder-volume restart
 	sleep 2
 COMMANDS
-
+#########[ VERIFY THE OPERATIONS ################
+echo "----Verify the successful deployment of Cinder Service----"
+	sleep 5
+	###Source the admin credentials
+	source ./admin-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	sleep 2
+	echo "openstack volume service list"
+	openstack volume service list
 }
 
 Cinder_installation_pre
 cinder_config_controller
-#config_block1
+config_block1

@@ -2,7 +2,7 @@
 source /root/autovm/globalvar.sh
 
 placement_pre(){
-echo "CREATE A DATABASE GLANCE"
+echo "CREATE A DATABASE PLACEMENT-----"
 
 mysql << EOF
 CREATE DATABASE placement;
@@ -70,7 +70,7 @@ echo "INSTALLATION AND CONFIGURATION OF PlACEMENT STARTED!!!!"
 
 	filepath1=' /etc/placement/placement.conf'
 # Backup the original .conf file
-#	cp $filepath1 ${filepath1}.bakup
+	cp $filepath1 ${filepath1}.bakup
 	echo "......Configuration on $filepath1........"
 
 	

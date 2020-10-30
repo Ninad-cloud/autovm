@@ -69,7 +69,7 @@ glance_config(){
 
 	filepath1='/etc/glance/glance-api.conf'
 # Backup the original .conf file
-#	cp $filepath1 ${filepath1}.bakup
+	cp $filepath1 ${filepath1}.bakup
 	echo "......Configuration on $filepath1........"
 	
 	
