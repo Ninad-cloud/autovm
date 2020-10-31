@@ -299,7 +299,7 @@ sleep 2
 
 
 }
-#Nova_Installtion
+Nova_Installtion
 Nova_config_controller
-#Nova_config_compute
+Nova_config_compute
 verify_compute_controller
