@@ -28,6 +28,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	fi
 	
 	sleep 2
+
 	####CREATE PROVIDER SUBNET#####
 	if openstack subnet list | grep provider;then
 		echo "PROVIDER SUBNET ALREADY EXIST, IGNORING..!!"
@@ -93,15 +94,16 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 		openstack router add subnet router selfservice || exit
 	fi
 	
+	#####[ OPENSTACK ROUTER SET TO EXTERNAL_GATEWAY Critical ]##################
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m SET GATEWAY(EXTERNAL IP) for router"
 	sleep 2
-	#if openstack router-show router | grep "$ROUTER_EXT_IP";then
-	#	echo "GATEWAY(EXTERNAL IP) for router ALREADY EXIST, IGNORING...!!"
-	#else
+	if openstack router show router | grep router;then
+		echo "GATEWAY(EXTERNAL IP) for router ALREADY EXIST, IGNORING...!!"
+	else
 		echo "openstack router set router --external-gateway provider"
 		openstack router set router --external-gateway provider || exit
-	#fi
-	
+	fi
+	#############################################################################
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m VERIFY OPERATION...."
 	sleep 2
 	###Source the admin credentials
@@ -120,11 +122,12 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "ip netns"
 	ip netns
 	
-	#success=`openstack port list --router router || grep "$"`
-	#if [ ! -z "$success" ];then
-	#	echo "NETWORK CREATED SUCCESSFULLY..!!"
-	#fi
-
+	success=`openstack port list --router router || grep "$END_IP"`
+	if [ ! -z "$success" ];then
+		echo "NETWORK CREATED SUCCESSFULLY..!!"
+	fi
+	
+	###### OPENSTACK PORT LIST ROUTER #########
 	echo "openstack port list --router router"
 	openstack port list --router router
 	
@@ -142,7 +145,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m Create Kaypair and Security group..."
 	sleep 2
-	
+
 	###Source the demo credentials
 	source ./demo-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -166,9 +169,9 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m CREATE TCP & ICMP SECURITY RULES"
 	sleep 2
-	rules_exist=`openstack security group list | grep "default"`
-	
-	if [ "$rules_exist" -gt 1 ];then
+	rules_exist=`openstack security group list | grep "default" | wc -l`
+	echo "$rules_exist"
+	if [ "$rules_exist" -gt 0 ];then
 		echo "TCP & ICMP SECURITY RULES ALREADY EXIST..!!"
 	else
 		echo "openstack security group rule create --proto icmp default"
@@ -176,7 +179,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 		echo "openstack security group rule create --proto tcp --dst-port 22 default"
 		openstack security group rule create --proto tcp --dst-port 22 default
 	fi
-	
+
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 	###Source the demo credentials
 	source ./demo-openrc
@@ -199,7 +202,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "openstack network list"
 	openstack network list
 	
-	SELFSERVICE_NET_ID=$(openstack network list | awk 'NR == 4 {print $2; exit}')
+	SELFSERVICE_NET_ID=$(openstack network list | grep selfservice | awk 'NR == 1 {print $2; exit}')
 	
 	echo "$SELFSERVICE_NET_ID"
 	
@@ -207,7 +210,24 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	openstack security group list
 
 	echo "Launch An INSTANCE....."
+	echo "openstack server create --flavor m1.nano --image cirros --nic net-id=$SELFSERVICE_NET_ID --security-group default --key-name mykey selfservice-instance"
 	
 	openstack server create --flavor m1.nano --image cirros --nic net-id=$SELFSERVICE_NET_ID --security-group default --key-name mykey selfservice-instance
+	
+	sleep 15
+	echo "openstack server list"
+	openstack server list
+	sleep 2
 
+	if openstack server list | grep "ACTIVE";then
+		echo "---SELFSERVICE_INSTANCE SUCCESSFULLY LAUNCH---"
+	else
+		echo "---CHECK FOR CONFIGURATION AGAIN AND RESTART ESSENTIAL SERVICES---"
+	fi
+
+	echo "openstack console url show selfservice-instance"
+	openstack console url show selfservice-instance
+	
 }
+
+launch_instance
