@@ -52,19 +52,19 @@ controller_config(){
 ###installing Packages on Controller Node####
 
 	PKG_FAILED=0
-	apt-get install swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached -y || PKG_FAILED=1
-	if [ $PKG_FAILED -gt 0 ];then
-		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
-		apt update
-		exit
-	else
-		echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"
-	fi
+#	apt-get install swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached -y || PKG_FAILED=1
+#	if [ $PKG_FAILED -gt 0 ];then
+#		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
+#		apt update
+#		exit
+#	else
+#		echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"
+#	fi
 
-	sleep 15
+#	sleep 15
 	
 	echo "---Create /etc/swift directory---"
-	mkdir /etc/swift
+#	mkdir /etc/swift
 	
 	filepath1='/etc/swift/proxy-server.conf'
 	
@@ -75,7 +75,6 @@ controller_config(){
 	fi
 	sleep 5
 	
-	
 	# Backup the original .conf file
 	
 	cp $filepath1 ${filepath1}.bak
@@ -83,16 +82,12 @@ controller_config(){
 	echo "---STARTED CONFIGURATION-----"
 	
 	grep -q "^user = swift" $filepath1|| sed -i '/^\[DEFAULT\]/ a user = swift\nswift_dir = \/etc\/swift' $filepath1
-	sed  -i 's/tempurl ratelimit tempauth/ratelimit authtoken keystoneauth/' $filepath1
 	
-	grep -q "^account_autocreate = True" $file || sed -i '/^\[app:proxy-server\]/ a account_autocreate = True' $filepath1
+	sed  -i 's/tempurl ratelimit tempauth copy/ratelimit authtoken keystoneauth/' $filepath1
 	
-	sed -i '/^# [filter:keystoneauth*/ a \\n[filter:keystoneauth]\nuse = egg:swift#keystoneauth\noperator_roles = admin,myrole' $filepath1
+	grep -q "^account_autocreate = True" $filepath1 || sed -i '/^\[app:proxy-server\]/ a account_autocreate = True' $filepath1
 	
-	#sed -i '$ a [filter:keystoneauth]\nuse = egg:swift\#keystoneauth\noperator_roles = admin,myrole' $filepath1
-	
-	sed -i '/^# [filter:authtoken*/ a \\n[filter:authtoken]\npaste.filter_factory = keystonemiddleware.auth_token:filter_factory\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_id = default\nproject_domain_id = default\nproject_name = service\nusername = swift\npassword = '$COMMON_PASS'\ndelay_auth_decision = True' $filepath1
-	
+	sed -i '/^user_test5_tester5 = testing5*/ a \\n[filter:authtoken]\npaste.filter_factory = keystonemiddleware.auth_token:filter_factory\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_id = default\nuser_domain_id = default\nproject_name = service\nusername = swift\npassword = '$COMMON_PASS'\ndelay_auth_decision = True\n\n[filter:keystoneauth]\nuse = egg:swift#keystoneauth\noperator_roles = admin,myrole' $filepath1
 	
 	
 	grep -q "^memcache_servers = controller:11211" $filepath1 || sed -i '/^\[filter:cache\]/ a memcache_servers = controller:11211' $filepath1
@@ -101,4 +96,3 @@ controller_config(){
 	
 swift_prereq_controller	
 controller_config	
-	
