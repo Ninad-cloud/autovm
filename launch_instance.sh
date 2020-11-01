@@ -17,7 +17,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	sleep 2
+	
 	
 	####CREATE PROVIDER NETWORK####
 	if openstack network list | grep provider;then
@@ -27,7 +27,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 		openstack network create --share --external --provider-physical-network provider --provider-network-type flat provider || exit
 	fi
 	
-	sleep 2
+	
 
 	####CREATE PROVIDER SUBNET#####
 	if openstack subnet list | grep provider;then
@@ -50,7 +50,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	sleep 2
+	
 	
 	if openstack network list | grep selfservice;then
 		echo "selfservice network already exist, IGNORING...!!"
@@ -83,7 +83,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	sleep 2
+	
 	
 	if openstack router list | grep router;then
 		echo "Router Already exist.. IGNORING..!!"
@@ -96,13 +96,9 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	
 	#####[ OPENSTACK ROUTER SET TO EXTERNAL_GATEWAY Critical ]##################
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m SET GATEWAY(EXTERNAL IP) for router"
-	sleep 2
-	if openstack router show router | grep router;then
-		echo "GATEWAY(EXTERNAL IP) for router ALREADY EXIST, IGNORING...!!"
-	else
-		echo "openstack router set router --external-gateway provider"
-		openstack router set router --external-gateway provider || exit
-	fi
+	echo "openstack router set router --external-gateway provider"
+	openstack router set router --external-gateway provider
+
 	#############################################################################
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m VERIFY OPERATION...."
 	sleep 2
@@ -116,7 +112,6 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	sleep 2
 	
 	
 	echo "ip netns"
@@ -191,7 +186,6 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	sleep 2
 	
 	echo "openstack flavor list"
 	openstack flavor list
@@ -209,24 +203,25 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	echo "openstack security group list"
 	openstack security group list
 
+	
 	echo "Launch An INSTANCE....."
 	echo "openstack server create --flavor m1.nano --image cirros --nic net-id=$SELFSERVICE_NET_ID --security-group default --key-name mykey selfservice-instance"
 	
 	openstack server create --flavor m1.nano --image cirros --nic net-id=$SELFSERVICE_NET_ID --security-group default --key-name mykey selfservice-instance
 	
-	sleep 15
+	sleep 5
 	echo "openstack server list"
 	openstack server list
 	sleep 2
 
 	if openstack server list | grep "ACTIVE";then
 		echo "---SELFSERVICE_INSTANCE SUCCESSFULLY LAUNCH---"
+		echo "openstack console url show selfservice-instance"
+		openstack console url show selfservice-instance
 	else
 		echo "---CHECK FOR CONFIGURATION AGAIN AND RESTART ESSENTIAL SERVICES---"
 	fi
 
-	echo "openstack console url show selfservice-instance"
-	openstack console url show selfservice-instance
 	
 }
 
@@ -270,7 +265,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 	
 	echo "--Delete the Stack---"
 	echo "openstack stack delete --yes stack"
-	#openstack stack delete --yes stack
+	openstack stack delete --yes stack
 
 	
 }
