@@ -177,7 +177,7 @@ echo "---Configuration of Block Storage Service on Block1 Node Started......."
 	sed -i 's/^connection = sqlite/#&/' $filepath1
 	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://cinder:'$COMMON_PASS'@controller/cinder' $filepath1
         
-	sed -i '/^#connection = sqlite*/ a \\n[keystone_authtoken]\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'\n\n[lvm]\nvolume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver\nvolume_group = cinder-volumes\ntarget_protocol = iscsi\ntarget_helper = tgtadm\n\n[oslo_concurrency]\nlock_path = /var/lib/cinder/tmp' $filepath1
+	sed -i '/^#connection = sqlite*/ a \\\n[keystone_authtoken]\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'\n\n[lvm]\nvolume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver\nvolume_group = cinder-volumes\ntarget_protocol = iscsi\ntarget_helper = tgtadm\n\n[oslo_concurrency]\nlock_path = /var/lib/cinder/tmp' $filepath1
 
 	echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Restart the Block Storage volume service"
 	echo "service tgt restart"

@@ -66,21 +66,21 @@ EOF
 
 }
 
-ssh-keygen_gen
-add_ssh-keygen
-config_Hostnames
-source /root/autovm/ntp_install.sh
-source /root/autovm/generic_pkg.sh
-source /root/autovm/mysql_config.sh
-source /root/autovm/rabbitmq.sh
-source /root/autovm/memcached.sh
-source /root/autovm/etcd.sh
-source /root/autovm/keystone.sh
-source /root/autovm/glance.sh
-source /root/autovm/placement.sh
-source /root/autovm/dashboard.sh
-source /root/autovm/compute.sh
-source /root/autovm/neutron.sh
-source /root/autovm/cinder.sh
-source /root/autovm/heatservice.sh
-#source /root/autovm/launch_instance.sh
+#ssh-keygen_gen
+#add_ssh-keygen
+#config_Hostnames
+#source /root/autovm/ntp_install.sh
+#source /root/autovm/generic_pkg.sh
+#source /root/autovm/mysql_config.sh
+#source /root/autovm/rabbitmq.sh
+#source /root/autovm/memcached.sh
+#source /root/autovm/etcd.sh
+#source /root/autovm/keystone.sh
+#source /root/autovm/glance.sh
+#source /root/autovm/placement.sh
+#source /root/autovm/dashboard.sh
+#source /root/autovm/compute.sh
+#source /root/autovm/neutron.sh
+#source /root/autovm/cinder.sh
+#source /root/autovm/heatservice.sh
+source /root/autovm/launch_instance.sh

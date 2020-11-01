@@ -276,4 +276,4 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 }
 
 launch_instance
-Heat_Instance
+#Heat_Instance
