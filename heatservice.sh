@@ -1,4 +1,4 @@
-#####[ ORCHESTRATION SERVICE (HEAT) ]
+#######################[ ORCHESTRATION SERVICE (HEAT) ]###############
 
 #!/bin/sh
 source /root/autovm/globalvar.sh
@@ -103,12 +103,11 @@ Heat_config(){
 	fi
 
 	sleep 15
-	
 	filepath1='/etc/heat/heat.conf'
-	
+	cp $filepath1 ${filepath1}.bak
 	echo -e "\n\e[36m[ HEAT_ON_CONTROLLER ] :\e[0m SETTING HEAT CONFIGURATION PARAMETER"
 	
-	grep -q "^connection = mysql+pymysql" $file || \
+	grep -q "^connection = mysql+pymysql" $filepath1 || \
     sed -i '/^\[database\]/ a connection = mysql+pymysql://heat:'$COMMON_PASS'@controller/heat' $filepath1
 		
 	grep -q "^transport_url =" $filepath1 || \
@@ -118,12 +117,11 @@ Heat_config(){
 	sed -i '/^\[keystone_authtoken\]/ a \\nauth_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = heat\npassword = '$COMMON_PASS'' $filepath1
 	
 	
-	grep -q "^auth_type =" $filepath1 || \
+#	grep -q "^auth_type =" $filepath1 || \
 	sed -i '/^\[trustee\]/ a \\nauth_type = password\nauth_url = http://controller:5000\nusername = heat\npassword = '$COMMON_PASS'\nuser_domain_name = default' $filepath1
 
-	grep -q "^auth_uri =" $filepath1 || \
+#	grep -q "^auth_uri =" $filepath1 || \
 	sed -i '/^\[clients_keystone\]/ a \\nauth_uri = http://controller:5000' $filepath1
-	
 	sleep 5
 	##### Populate The Datatabse #############
 	echo "---Populate The Orchestration Database---"
@@ -169,3 +167,4 @@ Verify_heatOp(){
 
 heat_pre
 Heat_config
+Verify_heatOp
