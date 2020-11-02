@@ -218,8 +218,12 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 		echo "---SELFSERVICE_INSTANCE SUCCESSFULLY LAUNCH---"
 		echo "openstack console url show selfservice-instance"
 		openstack console url show selfservice-instance
+		sleep 10
+		#Heat_Instance
 	else
 		echo "---CHECK FOR CONFIGURATION AGAIN AND RESTART ESSENTIAL SERVICES---"
+		recreate_ins()
+		
 	fi
 
 	
@@ -238,7 +242,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	sleep 2
+	
 	
 	echo "Determine Available Network--"
 	echo "openstack network list"
@@ -270,5 +274,59 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 	
 }
 
+recreate_ins(){
+###Source the demo credentials
+	source ./demo-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	
+	echo "Delete The Instance"
+	openstack server delete selfservice-instance
+	sleep 3
+	
+	echo "Remove Subnet from the Router"
+	openstack router remove subnet router selfservice-instance
+	sleep 3
+	
+	echo "Remove router"
+	openstack router delete router
+	sleep 2
+	
+	echo "Remove subnet Selfservice"
+	openstack subnet delete selfservice
+	sleep 2
+	
+	echo "Remove network selfservice"
+	openstack network delete selfservice
+	
+	sleep 2
+	###Source the admin credentials
+	source ./admin-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	
+	echo "Remove Provider Subnet"
+	openstack subnet delete provider
+	
+	echo "Remove Provider network"
+	openstack network delete provider
+	
+	sleep 5
+	
+}
+
+
 launch_instance
-#Heat_Instance
+
