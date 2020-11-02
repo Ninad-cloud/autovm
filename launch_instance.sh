@@ -222,7 +222,8 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 		#Heat_Instance
 	else
 		echo "---CHECK FOR CONFIGURATION AGAIN AND RESTART ESSENTIAL SERVICES---"
-		recreate_ins()
+		sleep 20
+	#	recreate_ins
 		
 	fi
 
@@ -276,6 +277,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 
 recreate_ins(){
 ###Source the demo credentials
+	echo "---DELETEING INSTANCES.........."
 	source ./demo-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"
@@ -288,24 +290,24 @@ recreate_ins(){
 	
 	echo "Delete The Instance"
 	openstack server delete selfservice-instance
-	sleep 3
+	sleep 10
 	
 	echo "Remove Subnet from the Router"
 	openstack router remove subnet router selfservice-instance
-	sleep 3
+	sleep 10
 	
 	echo "Remove router"
 	openstack router delete router
-	sleep 2
+	sleep 10
 	
 	echo "Remove subnet Selfservice"
 	openstack subnet delete selfservice
-	sleep 2
+	sleep 10
 	
 	echo "Remove network selfservice"
 	openstack network delete selfservice
 	
-	sleep 2
+	sleep 10
 	###Source the admin credentials
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -319,7 +321,7 @@ recreate_ins(){
 	
 	echo "Remove Provider Subnet"
 	openstack subnet delete provider
-	
+	sleep 10
 	echo "Remove Provider network"
 	openstack network delete provider
 	
@@ -329,4 +331,4 @@ recreate_ins(){
 
 
 launch_instance
-
+#recreate_ins

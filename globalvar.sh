@@ -40,6 +40,8 @@ OBJECT_DISK2="sdc"
 COMMON_PASS="redhat"
 
 ADMIN_TOKEN="$(openssl rand -hex 10)"
+HASH_PATH_SUFFIX="$(openssl rand -hex 6)"
+HASH_PATH_PREFIX="$(openssl rand -hex 6)"
 
 START_IP="10.116.32.4"
 END_IP="10.116.32.6"
