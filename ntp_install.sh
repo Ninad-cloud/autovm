@@ -38,7 +38,10 @@ chrony_install(){
 ntp_config(){
 
 	echo -e "\n\e[36m######## NTP CONFIGURATION IS IN PROCESS ########### \e[0m\n"
-
+		
+		##BackUp Of the Original File
+		cp /etc/chrony/chrony.conf /etc/chrony/chrony.conf.bak
+		
 ####################[ NTP ON CONTROLLER NODE ]############################################
 	    sed -i 's/^\<pool.*\>/#&/' /etc/chrony/chrony.conf 
 		sed -i '/#pool 2.*/a server gaia.ecs.csus.edu iburst\nallow 10.0.0.0/24' /etc/chrony/chrony.conf

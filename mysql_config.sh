@@ -35,16 +35,6 @@ fi
 
 }
 
-unconfig_Mysql(){
-
-	echo -e "\n\n\e[36m######################## MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IN PROCESS ############################### \e[0m\n"	
-	service mysql stop
-	rm -rf /etc/mysql/conf.d/openstack.cnf
-	service mysql start
-	sleep 5
-	echo -e "\n\n\e[36m###### MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IN DONE ########## \e[0m\n"
-
-}
 
 Mysql_Secure_install(){
 

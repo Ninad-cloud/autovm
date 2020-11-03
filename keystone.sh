@@ -24,7 +24,11 @@ apt install keystone -y || PKG_FAILED=1
 			echo -e "\n--- $1 PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"		
 		fi
 
+##BACKUP THE ORIGINAL FILE
+cp /etc/keystone/keystone.conf /etc/keystone/keystone.conf.bak
+cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf.bak
 
+#############################################################################################
 echo "MODIFY keystone CONFIGURATION"
 grep -q "^connection = mysql+pymysql" /etc/keystone/keystone.conf || sed -i '0,/^connection = sqlite/ s||connection = mysql+pymysql://keystone:'$COMMON_PASS'@controller/keystone\n#&|' /etc/keystone/keystone.conf
 

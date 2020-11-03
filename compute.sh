@@ -90,7 +90,7 @@ Nova_config_controller(){
 	filepath1='/etc/nova/nova.conf'
 	# Backup the original .conf file
 	
-	cp $filepath1 ${filepath1}.bak
+	cp $filepath1 ${filepath1}.bakup
 
 	echo "--------STARTED CONFIGURATION--------"
 	#comment the log_dir line under [DEFAULT]
@@ -204,7 +204,7 @@ PKG_FAILED=0
 	
 	#Backup the original .conf file
 
-	cp $filepath1 ${filepath1}.bak
+	cp $filepath1 ${filepath1}.bakup
 
 	sed -i 's/^log_dir=*/#&/' $filepath1
 	sed -i '/^state_path =*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nmy_ip = '$COMPUTE1_MGT_IP'\nuse_neutron = true\nfirewall_driver = nova.virt.firewall.NoopFirewallDriver' $filepath1

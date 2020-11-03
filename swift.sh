@@ -1,4 +1,4 @@
-#######[ DEPLYOMENT OF SWIFT- OBJECT STORAG ESERVICE ]########################
+#######[ DEPLYOMENT OF SWIFT-OBJECT STORAG ESERVICE ]########################
 #Swift Service Does not use SQL DAtabase on the Controller Node
 # Swift Service uses Distributed SQlite Databases
 #!/bin/sh
@@ -75,7 +75,7 @@ controller_config(){
 	sleep 5
 	# Backup the original .conf file
 	
-	cp $filepath1 ${filepath1}.bak
+	cp $filepath1 ${filepath1}.bakup
 	
 	echo "---STARTED CONFIGURATION-----"
 	
@@ -161,9 +161,9 @@ object_config(){
 			fi
 			
 			##Backup of the all Files
-			cp $filepath1 ${filepath1}.bak
-			cp $filepath2 ${filepath2}.bak
-			cp $filepath3 ${filepath3}.bak
+			cp $filepath1 ${filepath1}.bakup
+			cp $filepath2 ${filepath2}.bakup
+			cp $filepath3 ${filepath3}.bakup
 			
 			echo "--Edit /etc/fstab File---"
 			sleep 2
@@ -363,7 +363,7 @@ Create_accnt_ring(){
 		
 		file=/etc/swift/swift.conf
 		##Take A Backup
-		cp $file ${file}.bak
+		cp $file ${file}.bakup
 		sed -i 's/swift_hash_path_suffix = changeme/swift_hash_path_suffix = '$HASH_PATH_SUFFIX'/' $file
 		sed -i 's/swift_hash_path_prefix = changeme/swift_hash_path_prefix = '$HASH_PATH_PREFIX'/' $file
 		
