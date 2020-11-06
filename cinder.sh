@@ -140,31 +140,32 @@ echo "---Configuration of Block Storage Service on Block1 Node Started......."
 
 	sleep 15
 
-	#vg_present =`ssh root@$BLOCK1_MG_IP vgdisplay | grep cinder-volumes`
+	vg_present =$(ssh root@$BLOCK1_MG_IP vgdisplay | grep cinder-volumes)
 	filepath1='/etc/cinder/cinder.conf'
-	filepath2 ='/etc/lvm/lvm.conf'
+	
 	# Backup the original .conf file
 	
 	#Remote configuration of BLOCK Storage node.
 	ssh root@$BLOCK1_MGT_IP << COMMANDS
 	
 	cp $filepath1 ${filepath1}.bak
-	cp $filepath2 ${filepath2}.bak
+	cp /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
 	
-	#if [ -z "$vg_present" ];then
-		#pvcreate /dev/$BLOCK1_LVM_DISKNAME
-		#vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
-	#else
-		#echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Cinder-Volume Already Exist not creating"
-	#fi
+	echo "-----pvcreate & vgcreate----"
+	if [ -z "$vg_present" ];then
+		pvcreate /dev/$BLOCK1_LVM_DISKNAME
+		vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
+	else
+		echo -e "\n\e[36m[ CINDER_ON_BLOCK ] :\e[0m Cinder-Volume Already Exist not creating"
+	fi
 
-	echo "-----pvcreate----"
-	echo "pvcreate /dev/$BLOCK1_LVM_DISKNAME"
-	pvcreate /dev/$BLOCK1_LVM_DISKNAME
+	
+	#echo "pvcreate /dev/$BLOCK1_LVM_DISKNAME"
+	#pvcreate /dev/$BLOCK1_LVM_DISKNAME
 
-	echo "---vgcreate----"
-	echo "vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME"
-	vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
+	#echo "---vgcreate----"
+	#echo "vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME"
+	#vgcreate cinder-volumes /dev/$BLOCK1_LVM_DISKNAME
 		
 	#	#sed -i's/filter = \[ \"\a\/'$BLOCK1_LVM_DISKNAME'\/\", \"r\/\.\*\/\"\]/filter = \[ \"a\/\.\*\/\" \]/' $filepath2
 	
