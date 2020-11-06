@@ -209,16 +209,16 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	
 	openstack server create --flavor m1.nano --image cirros --nic net-id=$SELFSERVICE_NET_ID --security-group default --key-name mykey selfservice-instance
 	
-	sleep 5
+	sleep 6
 	echo "openstack server list"
 	openstack server list
-	sleep 2
+	sleep 6
 
 	if openstack server list | grep "ACTIVE";then
 		echo "---SELFSERVICE_INSTANCE SUCCESSFULLY LAUNCH---"
-		echo "openstack console url show selfservice-instance"
-		openstack console url show selfservice-instance
-		sleep 10
+#		echo "openstack console url show selfservice-instance"
+#		openstack console url show selfservice-instance
+#		sleep 10
 		#Heat_Instance
 	else
 		echo "---CHECK FOR CONFIGURATION AGAIN AND RESTART ESSENTIAL SERVICES---"
@@ -287,13 +287,14 @@ recreate_ins(){
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	
+	sleep 2
+
 	echo "Delete The Instance"
 	openstack server delete selfservice-instance
 	sleep 10
 	
 	echo "Remove Subnet from the Router"
-	openstack router remove subnet router selfservice-instance
+	openstack router remove subnet router selfservice
 	sleep 10
 	
 	echo "Remove router"
@@ -330,5 +331,5 @@ recreate_ins(){
 }
 
 
-launch_instance
-#recreate_ins
+#launch_instance
+recreate_ins
