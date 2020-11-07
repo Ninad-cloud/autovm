@@ -25,13 +25,12 @@ unconfig_controller(){
 	done
 	
 	sleep 10 
-    
 	# Delete Service, which eventually delete all the endpoints
 	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m CINDER SERVICE DELETING.."
 	
 	
 	if openstack service list | grep cinderv;then
-        openstack service delete cinderv2
+	       	openstack service delete cinderv2
 		openstack service delete cinderv3
 	fi
 	
@@ -41,24 +40,19 @@ unconfig_controller(){
 		openstack user delete cinder
 	fi
 
-    #chksrv=`openstack service list | grep cinder`
-    #if [ ! -z "$chksrv" ];then
-        #openstack service delete cinder
-		#openstack service delete cinderv2
-    #fi
-	
 	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "cinder")
-    if [ ! -z $drpdb ];
-    then
+	if [ ! -z $drpdb ];
+	then
 		mysql -u root -p$COMMON_PASS -e "DROP DATABASE cinder;DROP USER 'cinder'@'localhost';DROP USER 'cinder'@'%';"
-    fi
+	fi
 	
 	echo "--unconfig Cinder.conf file ---"
 	cp /etc/cinder/cinder.conf.bak /etc/cinder/cinder.conf
 	
+	echo "Restarting essential service...."
 	service nova-api restart
-    service cinder-scheduler restart
-    service cinder-api restart
+	service cinder-scheduler restart
+	service apache2 restart
 
 	echo -e "\n\e[36m### [ CONTROLLER ] : SUCCESSFULLY UNDEPLOYED CINDER ####### \e[0m\n"
 
@@ -69,7 +63,7 @@ remove_undelete_volumes(){
 	echo "service tgt stop"
 	service tgt stop
 
-	IFS=''
+	#IFS=''
 
 	for logical_volume in `lvdisplay | grep "LV Path" | awk '{print $3}'`;
 	do
@@ -87,8 +81,13 @@ remove_undelete_volumes(){
 	for volume_group in `vgdisplay | grep "VG Name" | awk '{print $3}'`;
 	do
         	echo "Removing Logical volume $volume_group"
+        	expect -c '
+        	spawn vgremove '$volume_group'
+        	expect "Do you really want to remove*"
+        	send "y\r"
+        	expect EOF'
 
-        	vgremove $volume_group
+   #     	vgremove $volume_group
 
         	echo "Successfully Removed Logical volume $volume_group"
 	done
@@ -113,8 +112,8 @@ echo -e "\n\e[36m######### [ BLOCK1 ] :  UNDEPLOY CINDER  ###### \e[0m\n"
     ##if the cinder volume already exist
     vg_present=$(ssh root@$BLOCK1_MGT_IP vgdisplay | grep cinder-volumes)
         
-	file="/etc/lvm/lvm.conf"
-    file1="/etc/cinder/cinder.conf"
+#	file="/etc/lvm/lvm.conf"
+#  file1="/etc/cinder/cinder.conf"
 
 	sleep 10
 

@@ -5,7 +5,7 @@ source /root/autovm/globalvar.sh
 unconfig_heat(){
 
 	echo -e "\n\e[36m#####[ CONTROLLER ] : UNDEPLOYING HEAT ######\e[0m\n"
-	sleep 10
+	sleep 5
 	
 	# Delete Heat Service, which eventually delete all the endpoints
 	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETING THE HEAT SERVICE.."
@@ -25,7 +25,7 @@ unconfig_heat(){
 
 			
 	if openstack service list | grep heat;then
-        openstack service delete heat
+       		 openstack service delete heat
 		openstack service delete heat-cfn
 	else
 		echo -e "\n\e[36m[ CONTROLLER ] :\e[0m HEAT SERVICE AND API ENDPOINTS DOESN'T EXIST, IGNORING..!!\n"
@@ -41,18 +41,21 @@ unconfig_heat(){
 		mysql -u root -p$COMMON_PASS -e "DROP DATABASE heat;DROP USER 'heat'@'localhost';DROP USER 'heat'@'%';"
     fi
 
-
-	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m CREATING HEAT DOMAIN, USER AND ROLES"
+	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETING HEAT DOMAIN, USER AND ROLES"
 		
 	if openstack role list | grep heat_stack_user; then
 		if openstack domain list | grep heat;
 		then
+			echo "First disable the domain heat"
+			openstack domain set --disable heat
+			echo "deleting the domain heat"
 			openstack domain delete heat
 		fi
 		
-		if openstack user list | grep heat_domain_admin;
+		if openstack user list | grep heat;
 		then
-			openstack user delete heat_domain_admin
+			openstack user delete heat
+			#openstack user delete heat_domain_admin
 		fi
 		
 		if openstack role list | grep heat_stack_owner;
@@ -80,7 +83,6 @@ unconfig_heat(){
 
 	echo -e "\n\e[36m######[ CONTROLLER ] : SUCCESSFULLY UNDEPLOYED HEAT ######\e[0m\n"
 	
-
 
 }
 

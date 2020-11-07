@@ -325,6 +325,7 @@ recreate_ins(){
 	sleep 10
 	echo "Remove Provider network"
 	openstack network delete provider
+	openstack network list
 	
 	sleep 5
 	
@@ -332,4 +333,6 @@ recreate_ins(){
 
 
 #launch_instance
+sleep 5
+#Heat_Instance
 recreate_ins
