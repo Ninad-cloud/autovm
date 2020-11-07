@@ -27,15 +27,15 @@ unconfig_Ntp(){
 	echo "--Copy the backup file--"
 	cp /etc/chrony/chrony.conf.bak /etc/chrony/chrony.conf
 	
-	echo -e "\n\e[36m######################## NTP UNCONFIGURATION ON ALL NODES IN PROCESS ####################### \e[0m\n"
+	echo -e "\n\e[36m##### NTP UNCONFIGURATION ON ALL NODES IN PROCESS ##### \e[0m\n"
 	
 	for i in "${nodes[@]}"
-    do
+	do
 		echo "$i"
-		scp /etc/chrony/chrony.conf root@$i:/etc/chrony/chrony.conf 
-    done
+		scp /etc/chrony/chrony.conf root@$i:/etc/chrony/chrony.conf
+	done
 	
-	echo -e "\n\n\e[36m######################## NTP UNCONFIGURATION ON ALL NODES IN DONE ################################# \e[0m\n"
+	echo -e "\n\n\e[36m#### NTP UNCONFIGURATION ON ALL NODES IN DONE ####### \e[0m\n"
 
 }
 
@@ -93,9 +93,9 @@ unconfig_etcd(){
 
 ######################[ UNCONFIG OPENSTACK SERVICES ]##################
 
-unsetting-openrc(){
+unsetting_openrc(){
 	
-		unset OS_PROJECT_DOMAIN_NAME
+	unset OS_PROJECT_DOMAIN_NAME
         unset OS_USER_DOMAIN_NAME
         unset OS_PROJECT_NAME
         unset OS_USERNAME
@@ -190,21 +190,23 @@ unconfig_glance(){
 	cp /etc/glance/glance-api.conf.bakup /etc/glance/glance-api.conf
 	
 	# Configuration parameters of glance-regisery
-     cp /etc/glance/glance-registry.conf.backup /etc/glance/glance-registry.conf
+     cp /etc/glance/glance-registry.conf.bakup /etc/glance/glance-registry.conf
 
 	if [ -f "cirros-0.4.0-x86_64-disk.img" ]; then
 		echo "Deleting cirros image"
 		rm -rf cirros-0.4.0-x86_64-disk.img
 	fi
 	
-	echo ""--Remove All the existing Images--"
+	echo "--Remove All the existing Images--"
 	rm -rf *.img*
 	
 	echo "--Restart Service--"
 	service glance-registry restart
 	service glance-api restart
+
 	echo "Verify Undeployment of glance"
 	openstack image list
+
 	echo -e "\n\n\e[36m###[ GLANCE ] : SUCCESSFULLY UNINSTALLED GLACE IMAGE SERVICE ###\e[0m\n\n\n"
 	
 }
@@ -221,6 +223,7 @@ unconfig_placement(){
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
+
 	echo "Delete glance service"
 	
 	if openstack service list | grep placement;then
@@ -254,8 +257,9 @@ unconfig_placement(){
 
 }
 
-unconfig_Identity
-#unconfig_placement
+
+#unconfig_glance
+unconfig_placement
 
 
 
