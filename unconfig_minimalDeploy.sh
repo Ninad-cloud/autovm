@@ -73,16 +73,6 @@ unconfig_Memcached(){
 
 }
 
-drop_database(){
-
-        drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep $1$)
-        if [ ! -z "$drpdb" ];
-        then
-                mysql -u root -p$COMMON_PASS -e "DROP DATABASE $1;DROP USER '$1'@'localhost';DROP USER '$1'@'%';"
-        fi
-
-}
-
 unconfig_etcd(){
 
 	echo "--Reset The original File Using BackUp File---"
@@ -95,7 +85,7 @@ unconfig_etcd(){
 
 unsetting_openrc(){
 	
-	unset OS_PROJECT_DOMAIN_NAME
+		unset OS_PROJECT_DOMAIN_NAME
         unset OS_USER_DOMAIN_NAME
         unset OS_PROJECT_NAME
         unset OS_USERNAME
@@ -108,23 +98,45 @@ unsetting_openrc(){
 
 unconfig_Identity(){
 	
-	echo -e "\n\n\n\e[36m######################[ KEYSTONE ] : UNDEPLOY IDENTITY SERVICE  #####################\e[0m\n\n\n"
-	file="/etc/keystone/keystone.conf"
-	
+	echo -e "\n\n\n\e[36m####[ KEYSTONE ] : UNDEPLOY IDENTITY SERVICE  ####\e[0m\n\n\n"
+		
 	#Create Keystone Service
         source ./admin-openrc
 		
 	if openstack service list | grep keystone;then
         	openstack service delete keystone
 	fi
-        #remove env variables
-        unsetting-openrc
-	if [ -f ".admin-openrc" ];then
+	
+	if openstack role list | grep myrole
+		openstack role delete myrole
+	fi
+	
+	if openstack user list | grep myuser
+		openstack user delete myuser
+	fi
+	
+	if openstack project list | grep myproject
+		openstack project delete myproject
+	fi
+	
+	if openstack project list | grep service
+		openstack project delete service
+	fi
+	
+	if openstack domain list | grep example
+		openstack domain delete example
+	fi
+
+	#remove client env. scripts
+    echo "..Unset the Env Scripts.."
+	unsetting-openrc
+	
+	if [ -f "./admin-openrc" ];then
 		rm ./admin-openrc
 	fi
-	if [ -f ".demo-openrc" ];then
-                rm ./demo-openrc
-        fi	
+	if [ -f "./demo-openrc" ];then
+		rm ./demo-openrc
+	fi	
 
 	echo -e "\n\e[36m[ KEYSTONE ] :\e[0m Droping the MYSQL DB.."
 	# DROP Mysql datatbse for keystone
@@ -366,19 +378,140 @@ echo -e "\n\n\n\e[36m#####[ COMPUTE1 ] : SUCCESFULLY UNDEPLOYED COMPUTE ###### \
 }
 
 unconfig_neutron_controller(){
+	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETE NEUTRON SERVICE...."
+	echo "Before deleting Neutron Service Make sure Your Instances are deleted...."
+	sleep 20
+	
+	source ./admin-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	
+	if openstack service list | grep neutron;then
+		openstack service delete neutron
+	fi
+	
+	echo "Delete user nova"
+	if openstack user list | grep neutron;then
+		openstack user delete neutron
+	fi
+	
+	
+	# Droping the compute databases-nova_api and nova.
+	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DROPPING COMPUTE NOVA MYSQL DB...."
+	
+	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "neutron")
+        if [ ! -z $drpdb ];
+        then
+                mysql -u root -p$COMMON_PASS -e "DROP DATABASE neutron;DROP USER 'neutron'@'localhost';DROP USER 'neutron'@'%';"
+        fi
+		
+	##unconfig neutron.conf
+	cp /etc/neutron/neutron.conf.bak /etc/neutron/neutron.conf
+	
+	##unconfig Network Option-2
+	cp /etc/neutron/plugins/ml2/ml2_conf.ini.bak /etc/neutron/plugins/ml2/ml2_conf.ini
+	
+	##Unconfig Linux Bridge Agent
+	cp /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+	
+	##UNconfig Layer-3
+	cp /etc/neutron/l3_agent.ini.bak /etc/neutron/l3_agent.ini
+	
+	##Unconfig DHCP
+	cp /etc/neutron/dhcp_agent.ini.bak /etc/neutron/dhcp_agent.ini
+	
+	##Unconfig Metadata
+	cp /etc/neutron/metadata_agent.ini.bak /etc/neutron/metadata_agent.ini
+	
+	##Unconfig neutron from nova.conf
+	
+        sed -i '/^\[neutron\]/,/url = http://controller:9696/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/auth_url = http://controller:5000/ d' /etc/nova/nova.conf
+        sed -i '/^\[neutron\]/,/auth_type = password/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/project_domain_name = default/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/user_domain_name = default/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/region_name = RegionOne/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/project_name = service/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/username = neutron/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/password = '$COMMON_PASS'/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/service_metadata_proxy = true/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/metadata_proxy_shared_secret = '$ADMIN_TOKEN'/ d' /etc/nova/nova.conf
+		
+	echo "...Restart All the Essential Services"
+	ERROR=""
+	#Restart the Compute-API service
+	service nova-api restart || ERROR="yes"
 
+    #Restart the Networking services
+	
+	service neutron-server restart || ERROR="yes"
+    service neutron-linuxbridge-agent restart || ERROR="yes"
+    service neutron-dhcp-agent restart || ERROR="yes"
+    service neutron-metadata-agent restart || ERROR="yes"
 
+    #Restart the layer-3 service:
+    service neutron-l3-agent restart || ERROR="yes"
+	
+	if [ ! -z $ERROR ];then
+		echo -e "\n\n\n\e[36mERROR OCCURED IN NEUTRON_ON_CONTROLLER_NODE. EXITING!!!!CHECK FOR THE ERROR & RERUN THE SCRIPT \e[0m\n\n"
+		exit
+    fi
 
-
+	echo -e "\n\n\n\e[36m###### [ CONTROLLER ] : SUCCESFULLY UNDEPLOYED NEUTRON #### \e[0m\n\n\n"
+	
 
 }
 
+unconfig_neutron_compute(){
+	
+	echo -e "\n\e[36m### [ COMPUTE1 ] : UNDEPLOYING NEUTRON #### \e[0m\n"
+	
+	ssh root@$COMPUTE1_MGT_IP << COMMANDS
+		echo "...Unconfig neutron.conf..."
+		cp /etc/neutron/neutron.conf.bak /etc/neutron/neutron.conf
+		
+		echo "..Unconfig Linux-Bridge Agent...."
+		cp /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+		
+		echo "..Unconfig nova.conf...."
+		sed -i '/^\[neutron\]/,/url = http://controller:9696/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/auth_url = http://controller:5000/ d' /etc/nova/nova.conf
+        sed -i '/^\[neutron\]/,/auth_type = password/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/project_domain_name = default/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/user_domain_name = default/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/region_name = RegionOne/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/project_name = service/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/username = neutron/ d' /etc/nova/nova.conf
+		sed -i '/^\[neutron\]/,/password = '$COMMON_PASS'/ d' /etc/nova/nova.conf
+		
+		echo "..Restart AllEssential Services..."
+		service nova-compute restart
+		service neutron-linuxbridge-agent restart
+		
+		echo "..Remove Linux_bridge_agent package..."
+		apt-get remove neutron-linuxbridge-agent -y
+		
+COMMANDS
 
-#unconfig_glance
+	echo -e "\n\e[36m### [ COMPUTE1 ] : SUCESSFULLY UNDEPLOYED NEUTRON #### \e[0m\n"
+}
+
+unconfig_neutron_controller
+#unconfig_neutron_compute
+#unconfig_nova_controller
+#unconfig_nova_compute
 #unconfig_placement
-unconfig_nova_controller
-unconfig_nova_compute
-
-
-
-
+#unconfig_glance
+#unconfig_Identity
+#unconfig_etcd
+#unconfig_Memcached
+#nconfig_Rabbitmq
+#unconfig_Mysql
+#unconfig_Ntp
+#unconfig_hostname

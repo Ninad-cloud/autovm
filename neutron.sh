@@ -131,12 +131,16 @@ PKG_FAILED=0
 
 	########[ CONFIGURE THE LAYER-3 AGENT ]################
 	echo "The Layer-3 agent for routing and NAT servies for self-service"
+	## BAckUp The Original File
+	cp /etc/neutron/l3_agent.ini /etc/neutron/l3_agent.ini.bak
 	
 	sed -i '/^\[DEFAULT\]/ a interface_driver = linuxbridge' /etc/neutron/l3_agent.ini
 	
 	sleep 2
 	###########[ CONFIGURE DHCP AGENT ]####################
 	echo "-----The DHCP agent provides DHCP services-----"
+	##BackUp The original file
+	cp /etc/neutron/dhcp_agent.ini /etc/neutron/dhcp_agent.ini.bak
 	
 	sed -i '/^\[DEFAULT\]/ a interface_driver = linuxbridge\ndhcp_driver = neutron.agent.linux.dhcp.Dnsmasq\nenable_isolated_metadata = true' /etc/neutron/dhcp_agent.ini
 	
@@ -144,6 +148,8 @@ PKG_FAILED=0
 
 	############[ CONFIGURE THE METADATA AGENT ]############
 	echo "---Configuring metadat agent provides credentials to instances---"
+	##BAckUp The Original File####
+	cp /etc/neutron/metadata_agent.ini /etc/neutron/metadata_agent.ini.bak
 	
 	sed -i '/^\[DEFAULT\]/ a nova_metadata_host = controller\nmetadata_proxy_shared_secret = '$ADMIN_TOKEN'' /etc/neutron/metadata_agent.ini
 	
