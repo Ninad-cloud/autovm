@@ -333,6 +333,6 @@ recreate_ins(){
 
 
 #launch_instance
-sleep 5
+#sleep 5
 #Heat_Instance
 recreate_ins

@@ -26,7 +26,7 @@ unconfig_hostname(){
 unconfig_Ntp(){
 	echo "--Copy the backup file--"
 	cp /etc/chrony/chrony.conf.bak /etc/chrony/chrony.conf
-	
+	apt remove chrony -y
 	echo -e "\n\e[36m##### NTP UNCONFIGURATION ON ALL NODES IN PROCESS ##### \e[0m\n"
 	
 	for i in "${nodes[@]}"
@@ -44,8 +44,8 @@ unconfig_Mysql(){
 	echo -e "\n\n\e[36m###### MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE ###### \e[0m\n"	
 	service mysql stop
 	rm -rf /etc/mysql/mariadb.conf.d/99-openstack.cnf
-	service mysql start
-
+#	service mysql start
+	apt remove mariadb-server python-pymysql -y
 	echo -e "\n\n\e[36m######MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IN DONE #### \e[0m\n"
 
 }
@@ -55,8 +55,11 @@ unconfig_Rabbitmq(){
 	echo -e "\n\n\e[36m## MESSAGE QUEUE (RABBITMQ) UNINSTALL ON CONTROLLER NODE ##### \e[0m\n"
 
 	rabbitmqctl stop_app
+	rabbitmqctl delete_user openstack
 	rabbitmqctl reset
-	rabbitmqctl start_app
+	#rabbitmqctl start_app
+
+	apt remove rabbitmq-server -y
 	
 	echo -e "\n\n\e[36m#### MESSAGE QUEUE (RABBITMQ) UNINSTALL ON CONTROLLER NODE IN DONE ####\e[0m\n"
 
@@ -68,6 +71,7 @@ unconfig_Memcached(){
 
         sed -i 's/^-l '$CONTROLLER_MGT_IP'/-l 127.0.0.1/' /etc/memcached.conf
         service memcached restart
+	apt remove memcached python-memcache -y
 
         echo -e "\n\n\e[36m### MEMCACHED UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IS DONE ##### \e[0m\n"
 
@@ -78,6 +82,8 @@ unconfig_etcd(){
 	echo "--Reset The original File Using BackUp File---"
 	cp /etc/default/etcd.bak /etc/default/etcd
 
+	apt remove etcd -y
+
 	echo -e "\n\n\e[36m### ETCD UNINSTALL ON CONTROLLER NODE IS DONE ##### \e[0m\n"
 }
 
@@ -85,7 +91,7 @@ unconfig_etcd(){
 
 unsetting_openrc(){
 	
-		unset OS_PROJECT_DOMAIN_NAME
+	unset OS_PROJECT_DOMAIN_NAME
         unset OS_USER_DOMAIN_NAME
         unset OS_PROJECT_NAME
         unset OS_USERNAME
@@ -101,35 +107,44 @@ unconfig_Identity(){
 	echo -e "\n\n\n\e[36m####[ KEYSTONE ] : UNDEPLOY IDENTITY SERVICE  ####\e[0m\n\n\n"
 		
 	#Create Keystone Service
-        source ./admin-openrc
+	source ./admin-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	
 		
 	if openstack service list | grep keystone;then
         	openstack service delete keystone
 	fi
 	
-	if openstack role list | grep myrole
+	if openstack role list | grep myrole;then
 		openstack role delete myrole
 	fi
 	
-	if openstack user list | grep myuser
+	if openstack user list | grep myuser;then
 		openstack user delete myuser
 	fi
 	
-	if openstack project list | grep myproject
+	if openstack project list | grep myproject;then
 		openstack project delete myproject
 	fi
 	
-	if openstack project list | grep service
+	if openstack project list | grep service;then
 		openstack project delete service
 	fi
 	
-	if openstack domain list | grep example
+	if openstack domain list | grep example;then
 		openstack domain delete example
 	fi
 
 	#remove client env. scripts
     echo "..Unset the Env Scripts.."
-	unsetting-openrc
+	unsetting_openrc
 	
 	if [ -f "./admin-openrc" ];then
 		rm ./admin-openrc
@@ -140,10 +155,10 @@ unconfig_Identity(){
 
 	echo -e "\n\e[36m[ KEYSTONE ] :\e[0m Droping the MYSQL DB.."
 	# DROP Mysql datatbse for keystone
-	chkdb=$(mysql -uroot -p$DB_PASS -e "SHOW DATABASES;" | grep "keystone")
-	if [ ! -z "$chkdb" ];
+	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "keystone")
+	if [ ! -z "$drpdb" ];
 	then
-		mysql -u root -p$DB_PASS -e "DROP DATABASE keystone;DROP USER 'keystone'@'localhost';DROP USER 'keystone'@'%';"
+		mysql -u root -p$COMMON_PASS -e "DROP DATABASE keystone;DROP USER 'keystone'@'localhost';DROP USER 'keystone'@'%';"
 	fi
        	
 	echo -e "\n\e[36m[ KEYSTONE ] :\e[0m Removing the config parameter"
@@ -153,6 +168,8 @@ unconfig_Identity(){
 	cp /etc/apache2/apache2.conf.bak /etc/apache2/apache2.conf
 	
 	service apache2 stop
+	echo "remove pkgs..."
+	apt remove keystone -y
 	
 }
 
@@ -218,6 +235,7 @@ unconfig_glance(){
 
 	echo "Verify Undeployment of glance"
 	openstack image list
+	apt remove glance -y
 
 	echo -e "\n\n\e[36m###[ GLANCE ] : SUCCESSFULLY UNINSTALLED GLACE IMAGE SERVICE ###\e[0m\n\n\n"
 	
@@ -265,6 +283,8 @@ unconfig_placement(){
 	
 	echo "Restart Services"
 	service apache2 restart
+	echo "Removing pkgs..."
+	apt remove placement-api -y
 
 
 }
@@ -272,7 +292,7 @@ unconfig_placement(){
 unconfig_nova_controller(){
 
 echo -e "\n\e[36m###### [ CONTROLLER ] : UNINSTALL COMPUTE SERVICE #######\e[0m\n\n"
-	sleep 10
+
 
 	# Remove all the instance , before deleting actual service.
 	echo -e "\n\n\e[36m[ CONTROLLER ] : DEELETING ALL VIRTUAL MACHINES.. #### \e[0m\n"
@@ -287,17 +307,17 @@ echo -e "\n\e[36m###### [ CONTROLLER ] : UNINSTALL COMPUTE SERVICE #######\e[0m\
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
 	
-	for instance_id in `nova list --all-tenants | awk '{ print $2 }'`;
-	do
-	    if [ "$instance_id" == "ID" ];then
-		    echo $instance_id
-		else
-			nova delete $instance_id
-		fi
-		sleep 5
-    done
+#	for instance_id in `nova list --all-tenants | awk '{ print $2 }'`;
+#	do
+#	    if [ "$instance_id" == "ID" ];then
+#		    echo $instance_id
+#	    else
+#		    nova delete $instance_id
+#	    fi
+#		sleep 5
+ #      done
 
-    sleep 10
+  #  sleep 10
 
 	# Delete Service, which eventually delete all the endpoints
         echo -e "\n\e[36m[ COMPUTE_ON_CONTROLLER ] :\e[0m DELETE NOVA COMPUTE SERVICE...."
@@ -325,23 +345,24 @@ echo -e "\n\e[36m###### [ CONTROLLER ] : UNINSTALL COMPUTE SERVICE #######\e[0m\
 	# Droping the compute databases-nova_api and nova.
 	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DROPPING COMPUTE NOVA MYSQL DB...."
 	
-	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova_api")
-        if [ ! -z $drpdb ];
+	drpdb1=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova_api")
+        if [ ! -z $drpdb1 ];
         then
-                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
+                #mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
+                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;"
         fi
-	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova")
-        if [ ! -z $drpdb ];
+	drpdb2=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova")
+        if [ ! -z $drpdb2 ];
         then
                 mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
         fi
 	
-	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova_cell0")
-        if [ ! -z $drpdb ];
+	drpdb3=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova_cell0")
+        if [ ! -z $drpdb3 ];
         then
-                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_cell0;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
+                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_cell0;"
         fi
-	
+
 	echo "Removing Configuration from nova.conf"
 	cp /etc/nova/nova.conf.bakup /etc/nova/nova.conf
 	sleep 2
@@ -352,12 +373,15 @@ echo -e "\n\e[36m###### [ CONTROLLER ] : UNINSTALL COMPUTE SERVICE #######\e[0m\
 	service nova-scheduler restart || ERROR="yes"
 	service nova-conductor restart || ERROR="yes"
 	service nova-novncproxy restart || ERROR="yes"
+	echo "..Removing pkgs..."
+	apt remove nova-api nova-conductor nova-novncproxy nova-scheduler nova-placement-api -y
 	
 	if [ ! -z $ERROR ];then
 		echo -e "\n\n\n\e[36mERROR OCCURED in CONTROLLER_NODE, EXITING. RECTIFY ERROR \e[0m\n\n"
 		exit
 	fi
 	echo -e "\n\n\n\e[36m#####[ CONTROLLER ] : SUCCESFULLY UNDEPLOYED COMPUTE ###### \e[0m\n\n\n"
+
 }
 
 unconfig_nova_compute(){
@@ -370,6 +394,8 @@ unconfig_nova_compute(){
 	echo "---Restarting Nova-Compute Service----"
 	echo "service nova-compute restart" 
 	service nova-compute restart
+	echo "Removing pkg..."
+	apt remove nova-compute -y
 	
 	sleep 2
 COMMANDS
@@ -396,14 +422,14 @@ unconfig_neutron_controller(){
 		openstack service delete neutron
 	fi
 	
-	echo "Delete user nova"
+	echo "Delete user neutron"
 	if openstack user list | grep neutron;then
 		openstack user delete neutron
 	fi
 	
 	
-	# Droping the compute databases-nova_api and nova.
-	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DROPPING COMPUTE NOVA MYSQL DB...."
+	# Droping the Neutron.
+	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DROPPING NEUTRON MYSQL DB...."
 	
 	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "neutron")
         if [ ! -z $drpdb ];
@@ -431,17 +457,7 @@ unconfig_neutron_controller(){
 	
 	##Unconfig neutron from nova.conf
 	
-        sed -i '/^\[neutron\]/,/url = http://controller:9696/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/auth_url = http://controller:5000/ d' /etc/nova/nova.conf
-        sed -i '/^\[neutron\]/,/auth_type = password/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/project_domain_name = default/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/user_domain_name = default/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/region_name = RegionOne/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/project_name = service/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/username = neutron/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/password = '$COMMON_PASS'/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/service_metadata_proxy = true/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/metadata_proxy_shared_secret = '$ADMIN_TOKEN'/ d' /etc/nova/nova.conf
+        sed -i '/url = http/,+10d' /etc/nova/nova.conf
 		
 	echo "...Restart All the Essential Services"
 	ERROR=""
@@ -450,7 +466,7 @@ unconfig_neutron_controller(){
 
     #Restart the Networking services
 	
-	service neutron-server restart || ERROR="yes"
+    service neutron-server restart || ERROR="yes"
     service neutron-linuxbridge-agent restart || ERROR="yes"
     service neutron-dhcp-agent restart || ERROR="yes"
     service neutron-metadata-agent restart || ERROR="yes"
@@ -461,7 +477,9 @@ unconfig_neutron_controller(){
 	if [ ! -z $ERROR ];then
 		echo -e "\n\n\n\e[36mERROR OCCURED IN NEUTRON_ON_CONTROLLER_NODE. EXITING!!!!CHECK FOR THE ERROR & RERUN THE SCRIPT \e[0m\n\n"
 		exit
-    fi
+        fi
+	echo "removing pkgs..."
+	apt remove neutron-server neutron-plugin-ml2 neutron-linuxbridge-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent -y
 
 	echo -e "\n\n\n\e[36m###### [ CONTROLLER ] : SUCCESFULLY UNDEPLOYED NEUTRON #### \e[0m\n\n\n"
 	
@@ -480,15 +498,7 @@ unconfig_neutron_compute(){
 		cp /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak /etc/neutron/plugins/ml2/linuxbridge_agent.ini
 		
 		echo "..Unconfig nova.conf...."
-		sed -i '/^\[neutron\]/,/url = http://controller:9696/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/auth_url = http://controller:5000/ d' /etc/nova/nova.conf
-        sed -i '/^\[neutron\]/,/auth_type = password/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/project_domain_name = default/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/user_domain_name = default/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/region_name = RegionOne/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/project_name = service/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/username = neutron/ d' /etc/nova/nova.conf
-		sed -i '/^\[neutron\]/,/password = '$COMMON_PASS'/ d' /etc/nova/nova.conf
+		sed -i '/url = http/,+8d' /etc/nova/nova.conf
 		
 		echo "..Restart AllEssential Services..."
 		service nova-compute restart
@@ -502,16 +512,16 @@ COMMANDS
 	echo -e "\n\e[36m### [ COMPUTE1 ] : SUCESSFULLY UNDEPLOYED NEUTRON #### \e[0m\n"
 }
 
-unconfig_neutron_controller
+#unconfig_neutron_controller
 #unconfig_neutron_compute
 #unconfig_nova_controller
 #unconfig_nova_compute
 #unconfig_placement
 #unconfig_glance
 #unconfig_Identity
-#unconfig_etcd
-#unconfig_Memcached
-#nconfig_Rabbitmq
-#unconfig_Mysql
-#unconfig_Ntp
-#unconfig_hostname
+unconfig_etcd
+unconfig_Memcached
+unconfig_Rabbitmq
+unconfig_Mysql
+unconfig_Ntp
+unconfig_hostname

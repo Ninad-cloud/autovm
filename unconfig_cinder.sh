@@ -48,7 +48,9 @@ unconfig_controller(){
 	
 	echo "--unconfig Cinder.conf file ---"
 	cp /etc/cinder/cinder.conf.bak /etc/cinder/cinder.conf
-	
+	echo "---remove entry of cinder from nova.conf"
+	sed -i '/os_region_name = RegionOne/d' /etc/nova/nova.conf
+
 	echo "Restarting essential service...."
 	service nova-api restart
 	service cinder-scheduler restart
