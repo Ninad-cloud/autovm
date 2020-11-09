@@ -5,6 +5,11 @@ source /root/autovm/globalvar.sh
 unconfig_controller(){
 
 	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"
+	source ./demo-openrc
+	echo "..Delete The File from The container..."
+	echo "openstack object delete container1 test_file.txt"
+	openstack object delete container1 test_file.txt
+	rm -rf /test
 	###Source the admin credentials
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -49,8 +54,8 @@ unconfig_storage(){
 		
 	done
 	
-	#configuration of OBJECT Storage node.
-      
+	#configuration of OBJECT Storage node
+
 	for i in "${object_node[@]}"
 	do
 		echo "[ object_node $i ]"
@@ -64,7 +69,9 @@ unconfig_storage(){
 		if [ -d "/srv/node/$OBJECT_DISK2" ];then
 			echo "First Unmount The DISK..."
 			umount /dev/$OBJECT_DISK1
+			ls -lh /dev/$OBJECT_DISK1
 			umount /dev/$OBJECT_DISK2
+			ls -lh /dev/$OBJECT_DISK2
 			echo "Remove Unmount DISK..."
 			rm -rf /srv/node/$OBJECT_DISK1
 			rm -rf /srv/node/$OBJECT_DISK2
@@ -148,6 +155,6 @@ remove_ring(){
 	echo -e "\n\e[36m#### [ SWIFT ] : REMOVEED RING CONFIGURATION AND UNDEPLOYED SERVICE FROM ALL THE NODES #### \e[0m\n"
 
 }
-unconfig_controller
-unconfig_storage
+#unconfig_controller
+#unconfig_storage
 remove_ring

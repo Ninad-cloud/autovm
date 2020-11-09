@@ -212,8 +212,10 @@ object_config(){
 			echo -e "\n--- $i PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"
 		fi
 	sleep 2	
-		curl -o /etc/swift/account-server.conf https://opendev.org/openstack/swift/raw/branch/stable/stein/etc/account-server.conf-sample
-		cp /etc/swift/account-server.conf /etc/swift/account-server.conf.bak
+		if [ ! -f /etc/swift/account-server.conf.bak ];then
+			curl -o /etc/swift/account-server.conf https://opendev.org/openstack/swift/raw/branch/stable/stein/etc/account-server.conf-sample
+			cp /etc/swift/account-server.conf /etc/swift/account-server.conf.bak
+		fi
 		sleep 2
 
 		curl -o /etc/swift/container-server.conf https://opendev.org/openstack/swift/raw/branch/stable/stein/etc/container-server.conf-sample
@@ -417,12 +419,11 @@ Create_accnt_ring(){
 	if openstack container create container1;then
 		echo "Container Created...!!!"
 	else
-		sleep 20
 		openstack container create container1
 	fi
-	
-	sleep 5
 
+	source ./demo-openrc
+	echo "Source The Demo-Openrc.."
 	echo "Test For DEMO User" > test_file.txt
 	openstack object create container1 test_file.txt
 	
@@ -434,10 +435,18 @@ Create_accnt_ring(){
 		break
 		else
 			echo -e "\nRound $i of list container"
-			sleep 20
+			sleep 5
 		fi
 	done
 
+	echo "create test directory"
+	mkdir /test
+	cd /test
+	openstack object save container1 test_file.txt
+	echo "..See The Result..."
+	cat test_file.txt
+	source ./demo-openrc
+	echo "Verify The Operation....."
 	if openstack object list container1 | grep test_file.txt;then
 		echo -e "\n\e[36m#####[ SUCCESSFULLY DEPLOYED SWIFT SERVICE ]######## \e[0m\n"
 	else
