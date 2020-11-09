@@ -42,6 +42,7 @@ unconfig_Ntp(){
 unconfig_Mysql(){
 
 	echo -e "\n\n\e[36m###### MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE ###### \e[0m\n"	
+	mysql -u root -p$COMMON_PASS -e "DROP DATABASE IF EXISTS nova;"
 	service mysql stop
 	rm -rf /etc/mysql/mariadb.conf.d/99-openstack.cnf
 #	service mysql start
@@ -55,10 +56,11 @@ unconfig_Rabbitmq(){
 	echo -e "\n\n\e[36m## MESSAGE QUEUE (RABBITMQ) UNINSTALL ON CONTROLLER NODE ##### \e[0m\n"
 
 	rabbitmqctl stop_app
-	rabbitmqctl delete_user openstack
+#	rabbitmqctl delete_user openstack
 	rabbitmqctl reset
-	#rabbitmqctl start_app
+	rabbitmqctl start_app
 
+	rabbitmqctl stop_app
 	apt remove rabbitmq-server -y
 	
 	echo -e "\n\n\e[36m#### MESSAGE QUEUE (RABBITMQ) UNINSTALL ON CONTROLLER NODE IN DONE ####\e[0m\n"
@@ -351,6 +353,7 @@ echo -e "\n\e[36m###### [ CONTROLLER ] : UNINSTALL COMPUTE SERVICE #######\e[0m\
                 #mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
                 mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;"
         fi
+
 	drpdb2=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova")
         if [ ! -z $drpdb2 ];
         then
@@ -512,13 +515,13 @@ COMMANDS
 	echo -e "\n\e[36m### [ COMPUTE1 ] : SUCESSFULLY UNDEPLOYED NEUTRON #### \e[0m\n"
 }
 
-#unconfig_neutron_controller
-#unconfig_neutron_compute
-#unconfig_nova_controller
-#unconfig_nova_compute
-#unconfig_placement
-#unconfig_glance
-#unconfig_Identity
+unconfig_neutron_controller
+unconfig_neutron_compute
+unconfig_nova_controller
+unconfig_nova_compute
+unconfig_placement
+unconfig_glance
+unconfig_Identity
 unconfig_etcd
 unconfig_Memcached
 unconfig_Rabbitmq

@@ -143,5 +143,5 @@ COMMANDS
 
 }
 
-unconfig_block1
 unconfig_controller
+unconfig_block1

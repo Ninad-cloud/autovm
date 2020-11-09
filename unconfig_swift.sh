@@ -6,6 +6,7 @@ unconfig_controller(){
 
 	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"
 	source ./demo-openrc
+	source /root/demo-openrc
 	echo "..Delete The File from The container..."
 	echo "openstack object delete container1 test_file.txt"
 	openstack object delete container1 test_file.txt
@@ -23,7 +24,7 @@ unconfig_controller(){
 	
 	echo "Delete swift service"
 	if openstack service list | grep swift;then
-        	openstack service delete glance
+        	openstack service delete swift
 	fi
 	
 	echo "Delete user swift"
@@ -79,12 +80,12 @@ unconfig_storage(){
 
 		if [ ! -z "$disk1_formated" ];then
 			echo "mkfs.ext4  /dev/$OBJECT_DISK1 > /dev/null"
-			mkfs.ext4  /dev/$OBJECT_DISK1 > /dev/null
+			#mkfs.ext4  /dev/$OBJECT_DISK1 > /dev/null
 		fi
 		
 		if [ ! -z "$disk2_formated" ];then
 			echo "mkfs.ext4  /dev/$OBJECT_DISK2 > /dev/null"
-			mkfs.ext4  /dev/$OBJECT_DISK2 > /dev/null
+			#mkfs.ext4  /dev/$OBJECT_DISK2 > /dev/null
 		fi
 
                        		
@@ -155,6 +156,6 @@ remove_ring(){
 	echo -e "\n\e[36m#### [ SWIFT ] : REMOVEED RING CONFIGURATION AND UNDEPLOYED SERVICE FROM ALL THE NODES #### \e[0m\n"
 
 }
-#unconfig_controller
-#unconfig_storage
+unconfig_controller
+unconfig_storage
 remove_ring

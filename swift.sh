@@ -64,7 +64,9 @@ controller_config(){
 	sleep 15
 	
 	echo "---Create /etc/swift directory---"
-	mkdir /etc/swift
+	if [ ! -d /etc/swift ];then
+		mkdir /etc/swift
+	fi
 	filepath1='/etc/swift/proxy-server.conf'
 	
 	if [ ! -f "$filepath1" ];then
@@ -139,15 +141,15 @@ object_config(){
 		fi
 		
 			if [ -z "$disk1_formated" ];then
-				echo "mkfs.xfs /dev/$OBJECT_DISK1"
+				echo "mkfs.xfs -f /dev/$OBJECT_DISK1"
 				sleep 2
-				mkfs.xfs /dev/$OBJECT_DISK1
+				mkfs.xfs -f /dev/$OBJECT_DISK1
 			fi
 			
 			if [ -z "$disk2_formated" ];then
-				echo "mkfs.xfs /dev/$OBJECT_DISK2"
+				echo "mkfs.xfs -f /dev/$OBJECT_DISK2"
 				sleep 2
-				mkfs.xfs /dev/$OBJECT_DISK2
+				mkfs.xfs -f /dev/$OBJECT_DISK2
 			fi
 			sleep 2
 			echo "Create Mount Point Directory Structure"
@@ -162,7 +164,6 @@ object_config(){
 			
 			##Backup of the all Files
 			cp $filepath1 ${filepath1}.bakup
-			cp $filepath2 ${filepath2}.bakup
 			cp $filepath3 ${filepath3}.bakup
 			
 			echo "--Edit /etc/fstab File---"
@@ -217,14 +218,17 @@ object_config(){
 			cp /etc/swift/account-server.conf /etc/swift/account-server.conf.bak
 		fi
 		sleep 2
-
-		curl -o /etc/swift/container-server.conf https://opendev.org/openstack/swift/raw/branch/stable/stein/etc/container-server.conf-sample
-		cp /etc/swift/container-server.conf /etc/swift/container-server.conf.bak
+	
+		if [ ! -f /etc/swift/container-server.conf.bak ];then
+			curl -o /etc/swift/container-server.conf https://opendev.org/openstack/swift/raw/branch/stable/stein/etc/container-server.conf-sample
+			cp /etc/swift/container-server.conf /etc/swift/container-server.conf.bak
+		fi
 		
 		sleep 2
-	
-		curl -o /etc/swift/object-server.conf https://opendev.org/openstack/swift/raw/branch/stable/stein/etc/object-server.conf-sample
-		cp /etc/swift/object-server.conf /etc/swift/object-server.conf.bak
+		if [ ! -f /etc/swift/object-server.conf.bak ];then
+			curl -o /etc/swift/object-server.conf https://opendev.org/openstack/swift/raw/branch/stable/stein/etc/object-server.conf-sample
+			cp /etc/swift/object-server.conf /etc/swift/object-server.conf.bak
+		fi
 		
 		sleep 2
 		###### CONFIG /etc/swift/account-server.conf #####
@@ -398,8 +402,7 @@ Create_accnt_ring(){
 		sleep 5
 
 	echo -e "\n\e[36m[ SWIFT_ON_CONTROLLER ] :\e[0m VERIFYING THE SWIFT SERVICE DEPLOYMENT"
-		ERROR=""
-		sleep 10
+
 	###Source the demo credentials
 	source ./demo-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -411,8 +414,16 @@ Create_accnt_ring(){
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
 	
+	source /root/demo-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
 		
-	echo "swift stat"
 	swift stat
 	
 	sleep 5
@@ -422,12 +433,32 @@ Create_accnt_ring(){
 		openstack container create container1
 	fi
 
-	source ./demo-openrc
 	echo "Source The Demo-Openrc.."
+	###Source the demo credentials
+	source ./demo-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+
+	source /root/demo-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
 	echo "Test For DEMO User" > test_file.txt
+
 	openstack object create container1 test_file.txt
 	
-	sleep 10
+	sleep 5
 
 	for i in 1 2 3;
 	do
@@ -445,7 +476,19 @@ Create_accnt_ring(){
 	openstack object save container1 test_file.txt
 	echo "..See The Result..."
 	cat test_file.txt
+	
 	source ./demo-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+
+	source /root/demo-openrc
+
 	echo "Verify The Operation....."
 	if openstack object list container1 | grep test_file.txt;then
 		echo -e "\n\e[36m#####[ SUCCESSFULLY DEPLOYED SWIFT SERVICE ]######## \e[0m\n"

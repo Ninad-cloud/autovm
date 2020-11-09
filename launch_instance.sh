@@ -6,6 +6,7 @@ source /root/autovm/globalvar.sh
 
 launch_instance(){
 
+source /root/autovm/serv_rest.sh
 echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
     ###Source the admin credentials
 	source ./admin-openrc
