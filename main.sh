@@ -84,6 +84,6 @@ source /root/autovm/placement.sh
 source /root/autovm/dashboard.sh
 source /root/autovm/compute.sh
 source /root/autovm/neutron.sh
-#source /root/autovm/cinder.sh
+source /root/autovm/cinder.sh
 #source /root/autovm/heatservice.sh
 #source /root/autovm/launch_instance.sh
