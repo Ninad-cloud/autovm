@@ -114,7 +114,7 @@ echo "INSTALLATION AND CONFIGURATION OF PlACEMENT STARTED!!!!"
 	
 	echo "Install osc-placement to check against placement API..."
 	PKG_FAILED=0
-	pip install osc-placement || PKG_FAILED=1
+	pip3 install osc-placement || PKG_FAILED=1
 	if [ $PKG_FAILED -gt 0 ];then
 		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
 		exit
