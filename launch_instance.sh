@@ -122,7 +122,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	if [ ! -z "$success" ];then
 		echo "NETWORK CREATED SUCCESSFULLY..!!"
 	fi
-	
+	sleep 2	
 	###### OPENSTACK PORT LIST ROUTER #########
 	echo "openstack port list --router router"
 	openstack port list --router router
