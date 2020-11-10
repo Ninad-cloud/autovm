@@ -350,14 +350,14 @@ echo -e "\n\e[36m###### [ CONTROLLER ] : UNINSTALL COMPUTE SERVICE #######\e[0m\
 	drpdb1=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova_api")
         if [ ! -z $drpdb1 ];
         then
-                #mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
-                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;"
+                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
+                #mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova_api;"
         fi
 
 	drpdb2=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova")
         if [ ! -z $drpdb2 ];
         then
-                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova;DROP USER 'nova'@'localhost';DROP USER 'nova'@'%';"
+                mysql -u root -p$COMMON_PASS -e "DROP DATABASE nova;"
         fi
 	
 	drpdb3=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "nova_cell0")

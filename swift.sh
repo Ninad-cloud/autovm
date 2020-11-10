@@ -413,17 +413,7 @@ Create_accnt_ring(){
 	echo "$OS_AUTH_URL"
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
-	
-	source /root/demo-openrc
-	echo "$OS_PROJECT_DOMAIN_NAME"
-	echo "$OS_PROJECT_NAME"
-	echo "$OS_USER_DOMAIN_NAME"
-	echo "$OS_USERNAME"
-	echo "$OS_PASSWORD"
-	echo "$OS_AUTH_URL"
-	echo "$OS_IDENTITY_API_VERSION"
-	echo "$OS_IMAGE_API_VERSION"
-		
+			
 	swift stat
 	
 	sleep 5
@@ -445,17 +435,7 @@ Create_accnt_ring(){
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
 
-	source /root/demo-openrc
-	echo "$OS_PROJECT_DOMAIN_NAME"
-	echo "$OS_PROJECT_NAME"
-	echo "$OS_USER_DOMAIN_NAME"
-	echo "$OS_USERNAME"
-	echo "$OS_PASSWORD"
-	echo "$OS_AUTH_URL"
-	echo "$OS_IDENTITY_API_VERSION"
-	echo "$OS_IMAGE_API_VERSION"
-	echo "Test For DEMO User" > test_file.txt
-
+	
 	openstack object create container1 test_file.txt
 	
 	sleep 5
@@ -487,8 +467,7 @@ Create_accnt_ring(){
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
 
-	source /root/demo-openrc
-
+	
 	echo "Verify The Operation....."
 	if openstack object list container1 | grep test_file.txt;then
 		echo -e "\n\e[36m#####[ SUCCESSFULLY DEPLOYED SWIFT SERVICE ]######## \e[0m\n"
