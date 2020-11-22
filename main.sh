@@ -69,30 +69,13 @@ EOF
 
 }
 
-ssh-keygen_gen
-add_ssh-keygen
-config_Hostnames
-source /root/autovm/ntp_install.sh
-source /root/autovm/generic_pkg.sh
-source /root/autovm/mysql_config.sh
-source /root/autovm/rabbitmq.sh
-source /root/autovm/memcached.sh
-source /root/autovm/etcd.sh
-source /root/autovm/keystone.sh
-source /root/autovm/glance.sh
-source /root/autovm/placement.sh
-source /root/autovm/dashboard.sh
-source /root/autovm/compute.sh
-source /root/autovm/neutron.sh
-source /root/autovm/cinder.sh
-#source /root/autovm/heatservice.sh
-#source /root/autovm/launch_instance.sh
 
 Prompt(){
 while true; do
     read -p "$1" yn
     case $yn in
-        [YyNn]* ) break;;
+        [Yy]* ) echo 1;break;;
+        [Nn]* ) echo 0;break;;
         * ) echo "Please answer yes or no.";;
     esac
 done
@@ -100,11 +83,29 @@ echo $yn
 return 
 }
 
+Start(){
+echo "Press Y to start Installation and n to start Uninstallation...."
+
+local Installation=$(Prompt "Do you want to start Installation or Uninstallation? ")
+echo $Installation
+if [$Installation == 1]; then
+	Installation
+else
+	Uninstallation
+fi
+
+}
+
 Installtion(){
 echo "[START]___MINIMAL DEPLOYMENT ALONG WITH DASHBOARD AND CINDER IS STARTED____"
-local res=$(Prompt "Q1")
-echo $local
-<<'COMMENTS'
+local heatservice=$(Prompt "Do you want to add heatservice? ")
+echo $heatservice
+local swift=$(Prompt "Do you want to add swift? ")
+echo $swift
+local manila=$(Prompt "Do you want to add manila? ")
+echo $manila
+
+
 ssh-keygen_gen
 add_ssh-keygen
 config_Hostnames
@@ -123,10 +124,20 @@ source /root/autovm/neutron.sh
 source /root/autovm/cinder.sh
 
 #########[ ADD MORE  PACKAGES ]#############
-echo "DO YOU WANT TO ADD MORE PACKAGES....."
-source /root/autovm/heatservice.sh
-source /root/autovm/swift1.sh
-source /root/autovm/manila.sh
+
+if [$heatservice == 1]; then
+	source /root/autovm/heatservice.sh
+fi
+
+if [$swift == 1]; then
+	source /root/autovm/swift1.sh
+fi
+
+if [$manila == 1]; then
+	source /root/autovm/manila.sh
+fi
+
+}
 
 ##########[ LAUNCH AN INSTANCE]#############
 echo "..LANUCH A VIRTUAL MACHINE..."
@@ -134,5 +145,46 @@ source /root/autovm/launch_instance.sh
 
 echo "LAUNCH ORCHESTRATION INSTANCES....."
 source /root/autovm/launch_heat_instance.sh
-COMMENTS
+
+Uninstallation(){
+echo "___[START] Undeploying CLOUD_____"
+local unconfig_heatservice=$(Prompt "Do you want to Uninstall heatservice? ")
+echo $unconfig_heatservice
+local unconfig_swift=$(Prompt "Do you want to Uninstall swift? ")
+echo $unconfig_swift
+local unconfig_manila=$(Prompt "Do you want to Uninstall manila? ")
+echo $unconfig_manila
+local unconfig_horizon=$(Prompt "Do you want to Uninstall Horizon? ")
+echo $unconfig_horizon
+local unconfig_cinder=$(Prompt "Do you want to Uninstall cinder? ")
+echo $unconfig_cinder
+local unconfig_minimalDepl=$(Prompt "Do you want to Uninstall Minimal Deployment? ")
+echo $unconfig_minimalDepl
+
+if [$unconfig_heatservice == 1]; then
+	source /root/autovm/unconfig_heat.sh
+fi
+
+if [$unconfig_swift == 1]; then
+	source /root/autovm/unconfig_swift.sh
+fi
+
+if [$unconfig_manila == 1]; then
+	source /root/autovm/unconfig_manila.sh
+fi
+
+if [$unconfig_horizon == 1]; then
+	source /root/autovm/unconfig_dashboard.sh
+fi
+
+if [$unconfig_cinder == 1]; then
+	source /root/autovm/unconfig_cinder.sh
+fi
+
+echo "..Before Starting unistall for Minimal Deployment make sure to remove all extra services....."
+if [$unconfig_minimalDepl == 1]; then
+	source /root/autovm/unconfig_minimalDeploy.sh
+fi
+
 }
+
