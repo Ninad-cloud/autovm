@@ -79,16 +79,17 @@ while true; do
         * ) echo "Please answer yes or no.";;
     esac
 done
-echo $yn
+#echo $yn
 return 
 }
 
 Start(){
 echo "Press Y to start Installation and n to start Uninstallation...."
 
-local Installation=$(Prompt "Do you want to start Installation or Uninstallation? ")
-echo $Installation
-if [$Installation == 1]; then
+local IU=$(Prompt "Do you want to start Installation or Uninstallation? ")
+echo "$IU"
+if [ "$IU" == "1" ];
+then
 	Installation
 else
 	Uninstallation
@@ -99,11 +100,11 @@ fi
 Installtion(){
 echo "[START]___MINIMAL DEPLOYMENT ALONG WITH DASHBOARD AND CINDER IS STARTED____"
 local heatservice=$(Prompt "Do you want to add heatservice? ")
-echo $heatservice
+echo "$heatservice"
 local swift=$(Prompt "Do you want to add swift? ")
-echo $swift
+echo "$swift"
 local manila=$(Prompt "Do you want to add manila? ")
-echo $manila
+echo "$manila"
 
 
 ssh-keygen_gen
@@ -125,15 +126,15 @@ source /root/autovm/cinder.sh
 
 #########[ ADD MORE  PACKAGES ]#############
 
-if [$heatservice == 1]; then
+if [ "$heatservice" == "1" ]; then
 	source /root/autovm/heatservice.sh
 fi
 
-if [$swift == 1]; then
+if [ "$swift" == "1" ]; then
 	source /root/autovm/swift1.sh
 fi
 
-if [$manila == 1]; then
+if [ "$manila" == "1" ]; then
 	source /root/autovm/manila.sh
 fi
 
@@ -149,40 +150,40 @@ source /root/autovm/launch_heat_instance.sh
 Uninstallation(){
 echo "___[START] Undeploying CLOUD_____"
 local unconfig_heatservice=$(Prompt "Do you want to Uninstall heatservice? ")
-echo $unconfig_heatservice
+echo "$unconfig_heatservice"
 local unconfig_swift=$(Prompt "Do you want to Uninstall swift? ")
-echo $unconfig_swift
+echo "$unconfig_swift"
 local unconfig_manila=$(Prompt "Do you want to Uninstall manila? ")
-echo $unconfig_manila
+echo "$unconfig_manila"
 local unconfig_horizon=$(Prompt "Do you want to Uninstall Horizon? ")
-echo $unconfig_horizon
+echo "$unconfig_horizon"
 local unconfig_cinder=$(Prompt "Do you want to Uninstall cinder? ")
-echo $unconfig_cinder
+echo "$unconfig_cinder"
 local unconfig_minimalDepl=$(Prompt "Do you want to Uninstall Minimal Deployment? ")
-echo $unconfig_minimalDepl
+echo "$unconfig_minimalDepl"
 
-if [$unconfig_heatservice == 1]; then
+if [ "$unconfig_heatservice" == "1" ]; then
 	source /root/autovm/unconfig_heat.sh
 fi
 
-if [$unconfig_swift == 1]; then
+if [ "$unconfig_swift" == "1" ]; then
 	source /root/autovm/unconfig_swift.sh
 fi
 
-if [$unconfig_manila == 1]; then
+if [ "$unconfig_manila" == "1" ]; then
 	source /root/autovm/unconfig_manila.sh
 fi
 
-if [$unconfig_horizon == 1]; then
+if [ "$unconfig_horizon" == "1" ]; then
 	source /root/autovm/unconfig_dashboard.sh
 fi
 
-if [$unconfig_cinder == 1]; then
+if [ "$unconfig_cinder" == "1" ]; then
 	source /root/autovm/unconfig_cinder.sh
 fi
 
 echo "..Before Starting unistall for Minimal Deployment make sure to remove all extra services....."
-if [$unconfig_minimalDepl == 1]; then
+if [ "$unconfig_minimalDepl" == "1" ]; then
 	source /root/autovm/unconfig_minimalDeploy.sh
 fi
 

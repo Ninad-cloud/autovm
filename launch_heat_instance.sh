@@ -1,6 +1,6 @@
 #Function To Launch HEAT Instances
 #Following are the OpenStack Commands allows to Launch ORCHESTRATION Instances 
-#!/bin/bash
+#!/bin/sh
 source /root/autovm/globalvar.sh
 Heat_Instance(){
 

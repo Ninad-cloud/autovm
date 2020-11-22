@@ -1,7 +1,7 @@
 #Function To Launch Instances
 #Following are the OpenStack Commands allows to Launch Instances
 #And provides URL for the "selfservice-instance" 
-#!/bin/bash
+#!/bin/sh
 source /root/autovm/globalvar.sh
 
 launch_instance(){
