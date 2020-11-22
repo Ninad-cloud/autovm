@@ -87,3 +87,52 @@ source /root/autovm/neutron.sh
 source /root/autovm/cinder.sh
 #source /root/autovm/heatservice.sh
 #source /root/autovm/launch_instance.sh
+
+Prompt(){
+while true; do
+    read -p "$1" yn
+    case $yn in
+        [YyNn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+echo $yn
+return 
+}
+
+Installtion(){
+echo "[START]___MINIMAL DEPLOYMENT ALONG WITH DASHBOARD AND CINDER IS STARTED____"
+local res=$(Prompt "Q1")
+echo $local
+<<'COMMENTS'
+ssh-keygen_gen
+add_ssh-keygen
+config_Hostnames
+source /root/autovm/ntp_install.sh
+source /root/autovm/generic_pkg.sh
+source /root/autovm/mysql_config.sh
+source /root/autovm/rabbitmq.sh
+source /root/autovm/memcached.sh
+source /root/autovm/etcd.sh
+source /root/autovm/keystone.sh
+source /root/autovm/glance.sh
+source /root/autovm/placement.sh
+source /root/autovm/dashboard.sh
+source /root/autovm/compute.sh
+source /root/autovm/neutron.sh
+source /root/autovm/cinder.sh
+
+#########[ ADD MORE  PACKAGES ]#############
+echo "DO YOU WANT TO ADD MORE PACKAGES....."
+source /root/autovm/heatservice.sh
+source /root/autovm/swift1.sh
+source /root/autovm/manila.sh
+
+##########[ LAUNCH AN INSTANCE]#############
+echo "..LANUCH A VIRTUAL MACHINE..."
+source /root/autovm/launch_instance.sh
+
+echo "LAUNCH ORCHESTRATION INSTANCES....."
+source /root/autovm/launch_heat_instance.sh
+COMMENTS
+}
