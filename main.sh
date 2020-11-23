@@ -97,7 +97,7 @@ fi
 
 }
 
-Installtion(){
+Installation(){
 echo "[START]___MINIMAL DEPLOYMENT ALONG WITH DASHBOARD AND CINDER IS STARTED____"
 local heatservice=$(Prompt "Do you want to add heatservice? ")
 echo "$heatservice"
