@@ -165,17 +165,27 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 	
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m CREATE TCP & ICMP SECURITY RULES"
 	sleep 2
-	rules_exist=`openstack security group list | grep "default" | wc -l`
-	echo "$rules_exist"
-	if [ "$rules_exist" -gt 0 ];then
-		echo "TCP & ICMP SECURITY RULES ALREADY EXIST..!!"
+	#rules_exist=`openstack security group list | grep "default" | wc -l`
+	#echo "$rules_exist"
+	#if [ "$rules_exist" -gt 0 ];then
+	#	echo "TCP & ICMP SECURITY RULES ALREADY EXIST..!!"
+	#else
+	#	echo "openstack security group rule create --proto icmp default"
+	#	openstack security group rule create --proto icmp default
+	#	echo "openstack security group rule create --proto tcp --dst-port 22 default"
+	#	openstack security group rule create --proto tcp --dst-port 22 default
+	#fi
+	
+	if openstack security group rule list | grep "tcp";then
+		echo "TCP & ICMP rule already exist.!!"
 	else
 		echo "openstack security group rule create --proto icmp default"
 		openstack security group rule create --proto icmp default
 		echo "openstack security group rule create --proto tcp --dst-port 22 default"
 		openstack security group rule create --proto tcp --dst-port 22 default
 	fi
-
+	
+	sleep 5
 	echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 	###Source the demo credentials
 	source ./demo-openrc
