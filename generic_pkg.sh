@@ -32,7 +32,6 @@ generic_pkg(){
 		echo "first node $i "
 		echo -e "\n\e[36m GENERIC PACKAGE INSTALLATION AND UPDATE ON $i NODE IN PROCESS \e \n\n\n"
 		
-		#source /root/autovm/chk_Connectivity.sh_b $i	
 		echo "ssh to $i"
 		ssh root@$i << EOF
 	expect -c '
