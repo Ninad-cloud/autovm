@@ -69,6 +69,36 @@ EOF
 
 }
 
+Install_pkg(){
+#Install expect and paramiko on Controller Node
+echo "Installa expect and paramiko on controller node....."
+apt install expect python3-pip -y
+sleep 5
+pip3 install paramiko
+sleep 2
+pip3 shaow paramiko
+
+##Install expect and python3-pip on other nodes
+    echo "Start installing expect and pip3..."
+	for i in "${nodes[@]}"
+	do
+		echo "/etc/hosts configuration on other nodes"
+		echo "[ Node $i ]"
+		ssh root@$i apt install expect python3-pip -y
+	done
+	sleep 5
+	
+##Install paramiko on all the other nodes
+	echo "Start installing paramiko.."
+	for i in "${nodes[@]}"
+	do
+		echo "/etc/hosts configuration on other nodes"
+		echo "[ Node $i ]"
+		ssh root@$i pip3 install paramiko 
+	done	
+ 
+}
+
 
 Prompt(){
 while true; do
@@ -110,6 +140,7 @@ echo "$manila"
 ssh-keygen_gen
 add_ssh-keygen
 config_Hostnames
+Install_pkg
 source /root/autovm/ntp_install.sh
 source /root/autovm/generic_pkg.sh
 source /root/autovm/mysql_config.sh
@@ -189,3 +220,4 @@ fi
 
 }
 
+Start

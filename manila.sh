@@ -66,7 +66,7 @@ EOF
 	
 }
 
-config_manila(){
+config_manila_controller(){
 
 echo "INSTALLATION AND CONFIGURATION OF MANILA STARTED!!!!"
 <<'COMMENTS'	
@@ -165,6 +165,84 @@ COMMENTS
 	
 }
 
+config_bridge_block(){
+
+##Configure Linuxbridge
+echo "---Configuration of Linux-Bridge on block1 Node Started......."
+##### Installing Packages####
+	PKG_FAILED=0
+	ssh root@$BLOCK1_MGT_IP apt install neutron-linuxbridge-agent -y || PKG_FAILED=1
+	if [ $PKG_FAILED -gt 0 ];then
+		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
+		apt update
+		exit
+	else
+		echo -e "\n---PACKAGE INSTALLATION IS \e[36m[ DONE ] \e[0m ----\n"
+	fi
+
+	sleep 20
+
+  ### Declare And Take a BackUp OF all the File####
+  filepath1='/etc/neutron/neutron.conf'
+  filepath2='/etc/neutron/plugins/ml2/linuxbridge_agent.ini'
+  
+  ssh root@$BLOCK1_MGT_IP << COMMANDS
+	##Backup###
+	cp $filepath1 ${filepath1}.bak
+	cp $filepath2 ${filepath2}.bak
+  
+	sed -i '/^core_plugin = ml2*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nauth_strategy = keystone' $filepath1
+	sed -i 's/^core_plugin = ml2/#&/' $filepath1
+  
+	grep -q "^www_authenticate_uri = http://controller:5000" $filepath1 || \
+	sed -i '/^\[keystone_authtoken\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = neutron\npassword = '$COMMON_PASS'' $filepath1
+  
+	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/neutron/tmp' $filepath1
+	
+	sleep 2
+	echo "----Configure Linux-Bridge----"
+	sed -i '/^\[linux_bridge\]/ a physical_interface_mappings = provider:ens192' $filepath2
+	
+	sed -i '/^\[vxlan\]/ a enable_vxlan = true\nlocal_ip = '$BLOCK1_MGT_IP'\nl2_population = true' $filepath2
+	
+	sed -i '/^\[securitygroup\]/ a enable_security_group = true\nfirewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver' $filepath2
+	
+	sleep 2
+	
+	echo "--Verify kernal supports Network Bridges---"
+	echo "sysctl net.bridge.bridge-nf-call-iptables"
+	sysctl net.bridge.bridge-nf-call-iptables
+	
+	echo "sysctl net.bridge.bridge-nf-call-ip6tables"
+	sysctl net.bridge.bridge-nf-call-ip6tables
+	
+	echo "service neutron-linuxbridge-agent restart"
+	service neutron-linuxbridge-agent restart
+	sleep 5
+COMMANDS
+
+##########[ VERIFY THE SUCCESSFUK LAUNCH OF THE NEUTRON AGENTS ]########
+
+###Source the admin credentials
+	source ./admin-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	sleep 2
+
+echo "openstack network agent list"
+openstack network agent list
+sleep 2
+
+}
+
+
 manila_Prereq_controller
-config_manila
+config_manila_controller
+config_bridge_block
 

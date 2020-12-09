@@ -223,6 +223,7 @@ echo "---Configuration of Neutron Service on Compute Node Started......."
 	cp $filepath2 ${filepath2}.bak
   
 	sed -i '/^core_plugin = ml2*/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\nauth_strategy = keystone' $filepath1
+	sed -i 's/^core_plugin = ml2/#&/' $filepath1
   
 	grep -q "^www_authenticate_uri = http://controller:5000" $filepath1 || \
 	sed -i '/^\[keystone_authtoken\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = default\nuser_domain_name = default\nproject_name = service\nusername = neutron\npassword = '$COMMON_PASS'' $filepath1
@@ -251,6 +252,7 @@ echo "---Configuration of Neutron Service on Compute Node Started......."
 	
 	echo "---Restart All The Essential Services---"
 	echo "service nova-compute restart"
+	service nova-compute restart
 	sleep 2
 	
 	echo "service neutron-linuxbridge-agent restart"
