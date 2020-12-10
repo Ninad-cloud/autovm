@@ -223,19 +223,21 @@ echo "---Started Package Intallation on  [ block1 ] (Share) Node---- "
 	expect -c '
 	spawn apt-get install manila-share python-pymysql python-mysqldb -y
 	expect "*Set up a database for this package*"
-	send "\r"
+	send "no\r"
 	expect "*Configure RabbitMQ acces with debconf*"
-	send "\r"
+	send "no\r"
 	expect "*Manage keystone_authtoken with debconf*"
-	send "\r"
+	send "no\r"
 	expect "*Register this service in the Keystone endpoint catalog*"
-	send "\r"
-	interact'
+	send "no\r"
+	expect EOF'
 	exit
 EOF
 
-	ssh root@$BLOCK1_MGT_IP << COMMANDS
 	filepath1='/etc/manila/manila.conf'
+	
+	ssh root@$BLOCK1_MGT_IP << COMMANDS
+	
 	# Backup the original .conf file
 	cp $filepath1 ${filepath1}.bakup
 	echo "......Configuration on $filepath1........"
@@ -263,14 +265,36 @@ EOF
 	
 	sed -i '/^\[nova\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = nova\npassword = '$COMMON_PASS'' $filepath1
 	
-	#sed -i '/^\[cinder\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'\n\n[generic]\nshare_backend_name = GENERIC\nshare_driver = manila.share.drivers.generic.GenericShareDriver\ndriver_handles_share_servers = True\nservice_instance_flavor_id = 100\nservice_image_name = manila-service-image\nservice_instance_user = manila\nservice_instance_password = manila\ninterface_driver = manila.network.linux.interface.BridgeInterfaceDriver\nconnect_share_server_to_tenant_network = True' $filepath1
+	#sed -i '/^\[cinder\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'' $filepath1
 	
-	sed -i 's/#control_exchange = openstack/ a [generic]\nshare_backend_name = GENERIC\nshare_driver = manila.share.drivers.generic.GenericShareDriver\ndriver_handles_share_servers = True\nservice_instance_flavor_id = 100\nservice_image_name = manila-service-image\nservice_instance_user = manila\nservice_instance_password = manila\ninterface_driver = manila.network.linux.interface.BridgeInterfaceDriver\nconnect_share_server_to_tenant_network = True ' $filepath1
+	sed -i '/#control_exchange = openstack/ a [generic]\nshare_backend_name = GENERIC\nshare_driver = manila.share.drivers.generic.GenericShareDriver\ndriver_handles_share_servers = True\nservice_instance_flavor_id = 100\nservice_image_name = manila-service-image\nservice_instance_user = manila\nservice_instance_password = manila\ninterface_driver = manila.network.linux.interface.BridgeInterfaceDriver' $filepath1
 
 	##Restart manila-share service
-	#echo"service manila-share restart"
-	#service manila-share restart
+	echo"service manila-share restart"
+	service manila-share restart
 COMMANDS
+
+##Verify the successful configuration
+	source ./admin-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	
+	echo "manila service-list"
+	manila service-list
+
+##Download the Manila-Service-image before Proceeding Further
+echo"Started Downloading Manila-service-image on controller node..."
+
+echo "curl https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-master.qcow2 | glance image-create --name "manila-service-image" --disk-format qcow2 --container-format bare --visibility public --progress"
+
+curl https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-master.qcow2 | glance image-create --name "manila-service-image" --disk-format qcow2 --container-format bare --visibility public --progress
+
 }
 
 manila_Prereq_controller

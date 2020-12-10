@@ -30,7 +30,7 @@ unconfig_controller(){
 	
 	
 	if openstack service list | grep cinderv;then
-	       	openstack service delete cinderv2
+	    openstack service delete cinderv2
 		openstack service delete cinderv3
 	fi
 	
