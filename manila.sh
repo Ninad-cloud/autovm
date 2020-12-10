@@ -101,6 +101,8 @@ echo "INSTALLATION AND CONFIGURATION OF MANILA STARTED!!!!"
 		
 	sed -i '/^\[keystone_authtoken\]/ a memcached_servers = controller:11211\npassword = '$COMMON_PASS'\nauth_url = http://controller:5000\nwww_authenticate_uri = http://controller:5000' $filepath1
 	
+	## Populate the database and restart all essential service.
+	
 	echo "--Populate The Database---"
 	echo "su -s /bin/sh -c "manila-manage db sync" manila"
 	su -s /bin/sh -c "manila-manage db sync" manila
@@ -113,10 +115,6 @@ echo "INSTALLATION AND CONFIGURATION OF MANILA STARTED!!!!"
 	
 	echo "service manila-api restart"
 	service manila-api restart
-	sleep 5
-	
-	echo "service manila-share restart"
-	service manila-share restart
 	sleep 5
 	
 	echo "--Verify The Operation---"
@@ -245,7 +243,7 @@ EOF
 	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://manila:'$COMMON_PASS'@controller/manila' $filepath1
 	
 	
-	sed -i '/^\[DEFAULT\]/ a 'transport_url = rabbit://openstack:'$COMMON_PASS'@controller\ndefault_share_type = default_share_type\nshare_name_template = share-%s\nrootwrap_config = /etc/manila/rootwrap.conf\napi_paste_config = /etc/manila/api-paste.ini\nauth_strategy = keystone\nmy_ip = '$BLOCK1_MGT_IP'\nenabled_share_backends = generic\nenabled_share_protocols = NFS' $filepath1
+	sed -i '/^\[DEFAULT\]/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\ndefault_share_type = default_share_type\nshare_name_template = share-%s\nrootwrap_config = /etc/manila/rootwrap.conf\napi_paste_config = /etc/manila/api-paste.ini\nauth_strategy = keystone\nmy_ip = '$BLOCK1_MGT_IP'\nenabled_share_backends = generic\nenabled_share_protocols = NFS' $filepath1
 	
 	sed -i 's/^lock_path =*/#&/' $filepath1
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/manila/tmp' $filepath1
@@ -258,8 +256,6 @@ EOF
 	
 			
 	sed -i '/^\[keystone_authtoken\]/ a memcached_servers = controller:11211\npassword = '$COMMON_PASS'\nuth_url = http://controller:5000\nwww_authenticate_uri = http://controller:5000' $filepath1
-	
-	
 	
 	sed -i '/^\[neutron\]/ a url = http://controller:9696\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = neutron\npassword = '$COMMON_PASS'' $filepath1
 	
@@ -291,15 +287,36 @@ COMMANDS
 ##Download the Manila-Service-image before Proceeding Further
 echo"Started Downloading Manila-service-image on controller node..."
 
-echo "curl https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-master.qcow2 | glance image-create --name "manila-service-image" --disk-format qcow2 --container-format bare --visibility public --progress"
-
-curl https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-master.qcow2 | glance image-create --name "manila-service-image" --disk-format qcow2 --container-format bare --visibility public --progress
+	if openstack image list | grep "manila-service-image";then
+		echo "manila-service-image already exist, IGNORING..!!"
+	else
+		echo "curl https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-master.qcow2 | glance image-create --name "manila-service-image" --disk-format qcow2 --container-format bare --visibility public --progress"
+		curl https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-service-image-master.qcow2 | glance image-create --name "manila-service-image" --disk-format qcow2 --container-format bare --visibility public --progress || exit
+	fi
 
 }
 
-config_bridge_on_block
-sleep 5
-manila_Prereq_controller
-config_manila_controller
-config_manila_block
+	source ./admin-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+
+##Verify for the linuxbridge present on the block1 node as per manila service requirement if not the configure the linux bridge.
+	
+if openstack network agent list | grep block1;then
+	manila_Prereq_controller
+	config_manila_controller
+	config_manila_block
+else
+	config_bridge_on_block
+	sleep 5
+	manila_Prereq_controller
+	config_manila_controller
+	config_manila_block
+fi
 

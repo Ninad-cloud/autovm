@@ -27,6 +27,7 @@ unconfig_Ntp(){
 	echo "--Copy the backup file--"
 	cp /etc/chrony/chrony.conf.bak /etc/chrony/chrony.conf
 	apt remove chrony -y
+	apt purge chrony -y
 	echo -e "\n\e[36m##### NTP UNCONFIGURATION ON ALL NODES IN PROCESS ##### \e[0m\n"
 	
 	for i in "${nodes[@]}"
@@ -47,6 +48,7 @@ unconfig_Mysql(){
 	rm -rf /etc/mysql/mariadb.conf.d/99-openstack.cnf
 #	service mysql start
 	apt remove mariadb-server python-pymysql -y
+	apt purge mariadb-server python-pymysql -y
 	echo -e "\n\n\e[36m######MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IN DONE #### \e[0m\n"
 
 }
@@ -62,7 +64,7 @@ unconfig_Rabbitmq(){
 
 	rabbitmqctl stop_app
 	apt remove rabbitmq-server -y
-	
+	apt purge rabbitmq-server -y
 	echo -e "\n\n\e[36m#### MESSAGE QUEUE (RABBITMQ) UNINSTALL ON CONTROLLER NODE IN DONE ####\e[0m\n"
 
 }
@@ -73,8 +75,9 @@ unconfig_Memcached(){
 
         sed -i 's/^-l '$CONTROLLER_MGT_IP'/-l 127.0.0.1/' /etc/memcached.conf
         service memcached restart
-	apt remove memcached python-memcache -y
-
+		apt remove memcached python-memcache -y
+		apt purge memcached python-memcache -y
+		
         echo -e "\n\n\e[36m### MEMCACHED UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IS DONE ##### \e[0m\n"
 
 }
@@ -85,7 +88,7 @@ unconfig_etcd(){
 	cp /etc/default/etcd.bak /etc/default/etcd
 
 	apt remove etcd -y
-
+	apt purge etcd -y
 	echo -e "\n\n\e[36m### ETCD UNINSTALL ON CONTROLLER NODE IS DONE ##### \e[0m\n"
 }
 
@@ -108,7 +111,7 @@ unconfig_Identity(){
 	
 	echo -e "\n\n\n\e[36m####[ KEYSTONE ] : UNDEPLOY IDENTITY SERVICE  ####\e[0m\n\n\n"
 		
-	#Create Keystone Service
+	#Delete Keystone Service Project user domain and role
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"
@@ -172,6 +175,7 @@ unconfig_Identity(){
 	service apache2 stop
 	echo "remove pkgs..."
 	apt remove keystone -y
+	apt purge keystone -y
 	
 }
 
@@ -181,9 +185,12 @@ unconfig_glance(){
 
 	echo -e "\n\n\n\e[36m##### [ GLANCE ] : UNDEPLOYING THE GLANCE SERVICE #####\e[0m\n\n\n"
 
+	#Remove image
 	echo "rm -rf /var/lib/glance/images/*"
 	rm -rf /var/lib/glance/images/*	
 	sleep 2
+	
+	# Remove glance service and user
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"
@@ -235,9 +242,11 @@ unconfig_glance(){
 	service glance-registry restart
 	service glance-api restart
 
+	# Remove packages
 	echo "Verify Undeployment of glance"
 	openstack image list
 	apt remove glance -y
+	apt purge glance -y
 
 	echo -e "\n\n\e[36m###[ GLANCE ] : SUCCESSFULLY UNINSTALLED GLACE IMAGE SERVICE ###\e[0m\n\n\n"
 	
@@ -245,6 +254,7 @@ unconfig_glance(){
 
 unconfig_placement(){
 
+	#Remove placement service and user
     ###Source the admin credentials
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -285,8 +295,11 @@ unconfig_placement(){
 	
 	echo "Restart Services"
 	service apache2 restart
+	
+	# Remove Packages
 	echo "Removing pkgs..."
 	apt remove placement-api -y
+	apt purge placement-api -y
 
 
 }
@@ -376,8 +389,11 @@ echo -e "\n\e[36m###### [ CONTROLLER ] : UNINSTALL COMPUTE SERVICE #######\e[0m\
 	service nova-scheduler restart || ERROR="yes"
 	service nova-conductor restart || ERROR="yes"
 	service nova-novncproxy restart || ERROR="yes"
+	
+	##Remove Packages
 	echo "..Removing pkgs..."
 	apt remove nova-api nova-conductor nova-novncproxy nova-scheduler nova-placement-api -y
+	apt purge nova-api nova-conductor nova-novncproxy nova-scheduler nova-placement-api -y
 	
 	if [ ! -z $ERROR ];then
 		echo -e "\n\n\n\e[36mERROR OCCURED in CONTROLLER_NODE, EXITING. RECTIFY ERROR \e[0m\n\n"
@@ -399,6 +415,7 @@ unconfig_nova_compute(){
 	service nova-compute restart
 	echo "Removing pkg..."
 	apt remove nova-compute -y
+	apt purge nova-compute -y
 	
 	sleep 2
 COMMANDS
@@ -409,8 +426,9 @@ echo -e "\n\n\n\e[36m#####[ COMPUTE1 ] : SUCCESFULLY UNDEPLOYED COMPUTE ###### \
 unconfig_neutron_controller(){
 	echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETE NEUTRON SERVICE...."
 	echo "Before deleting Neutron Service Make sure Your Instances are deleted...."
-	sleep 20
+	sleep 10
 	
+	##Remove naetwork service and user
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"
@@ -480,10 +498,13 @@ unconfig_neutron_controller(){
 	if [ ! -z $ERROR ];then
 		echo -e "\n\n\n\e[36mERROR OCCURED IN NEUTRON_ON_CONTROLLER_NODE. EXITING!!!!CHECK FOR THE ERROR & RERUN THE SCRIPT \e[0m\n\n"
 		exit
-        fi
+    fi
+	
+	##Remove Packages
 	echo "removing pkgs..."
 	apt remove neutron-server neutron-plugin-ml2 neutron-linuxbridge-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent -y
-
+	
+	apt purge neutron-server neutron-plugin-ml2 neutron-linuxbridge-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent -y
 	echo -e "\n\n\n\e[36m###### [ CONTROLLER ] : SUCCESFULLY UNDEPLOYED NEUTRON #### \e[0m\n\n\n"
 	
 
@@ -509,14 +530,42 @@ unconfig_neutron_compute(){
 		
 		echo "..Remove Linux_bridge_agent package..."
 		apt-get remove neutron-linuxbridge-agent -y
+		apt purge neutron-linuxbridge-agent -y
 		
 COMMANDS
 
 	echo -e "\n\e[36m### [ COMPUTE1 ] : SUCESSFULLY UNDEPLOYED NEUTRON #### \e[0m\n"
 }
 
+unconfig_linuxbridge_block1(){
+
+echo -e "\n\e[36m### [ BLOCK1 ] : UNDEPLOYING NEUTRON_LINUXBRIDGE #### \e[0m\n"
+	
+	ssh root@$BLOCK1_MGT_IP << COMMANDS
+		echo "...Unconfig neutron.conf..."
+		cp /etc/neutron/neutron.conf.bak /etc/neutron/neutron.conf
+		
+		echo "..Unconfig Linux-Bridge Agent...."
+		cp /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+		
+		echo "..Restart AllEssential Services..."
+		service nova-compute restart
+		service neutron-linuxbridge-agent restart
+		
+		echo "..Remove Linux_bridge_agent package..."
+		apt-get remove neutron-linuxbridge-agent -y
+		
+		echo "apt purge neutron-linuxbridge-agent"
+		apt purge neutron-linuxbridge-agent -y
+		
+COMMANDS
+
+	echo -e "\n\e[36m### [ BLOCK1 ] : SUCESSFULLY UNDEPLOYED NEUTRON_LINUXBRIDGE #### \e[0m\n"
+}
+
 unconfig_neutron_controller
 unconfig_neutron_compute
+unconfig_linuxbridge_block1
 unconfig_nova_controller
 unconfig_nova_compute
 unconfig_placement

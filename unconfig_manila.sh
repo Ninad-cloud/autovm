@@ -5,6 +5,7 @@ source /root/autovm/globalvar.sh
 unconfig_manila_controller(){
 echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETING MANILA DATABASE SERVICE AND USER..."
 
+	##Remove manila service and user
 	###Source the admin credentials
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -27,6 +28,7 @@ echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETING MANILA DATABASE SERVICE AND USER
 		openstack user delete manila
 	fi
 
+	##Remove manila service entry bt dopping database
 	drpdb=$(mysql -uroot -p$COMMON_PASS -e "SHOW DATABASES;" | grep "manila")
 	if [ ! -z $drpdb ];
 	then
@@ -39,16 +41,17 @@ echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETING MANILA DATABASE SERVICE AND USER
 	service manila-scheduler restart
 	service manila-api restart
 	
+	##remove packages
 	echo "..Remove All packages..."
 	echo "apt remove manila-api manila-scheduler"
 	apt remove manila-api manila-scheduler -y
 	
 	echo "Purge the packages..."
 	echo "apt purge manila-scheduler"
-	apt purge manila-scheduler
+	apt purge manila-scheduler -y
 	
 	echo "apt purge manila-api"
-	apt purge manila-api
+	apt purge manila-api -y
 	sleep 5
 	
 	echo -e "\n\e[36m#### [ CONTROLLER ] :  SUCCESSFULLY UNDEPLOYED MANILA #### \e[0m\n"
@@ -66,7 +69,7 @@ unconfig_manila_block1(){
 		apt remove manila-share python-pymysql python-mysqldb -y
 		
 		echo "apt purge manila-share python-pymysql python-mysqldb"
-		apt purge manila-share python-pymysql python-mysqldb
+		apt purge manila-share python-pymysql python-mysqldb -y
 		
 COMMANDS
 		
@@ -74,47 +77,5 @@ COMMANDS
 
 }
 
-unconfig_linuxbridge_block1(){
-
-echo -e "\n\e[36m### [ BLOCK1 ] : UNDEPLOYING NEUTRON_LINUXBRIDGE #### \e[0m\n"
-	
-	ssh root@$COMPUTE1_MGT_IP << COMMANDS
-		echo "...Unconfig neutron.conf..."
-		cp /etc/neutron/neutron.conf.bak /etc/neutron/neutron.conf
-		
-		echo "..Unconfig Linux-Bridge Agent...."
-		cp /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak /etc/neutron/plugins/ml2/linuxbridge_agent.ini
-		
-		echo "..Restart AllEssential Services..."
-		service nova-compute restart
-		service neutron-linuxbridge-agent restart
-		
-		echo "..Remove Linux_bridge_agent package..."
-		apt-get remove neutron-linuxbridge-agent -y
-		
-		echo "apt purge neutron-linuxbridge-agent"
-		apt purge neutron-linuxbridge-agent
-		
-COMMANDS
-
-#Verify Operation
-echo "..Verify Undeployment of Linuxbridge from the block1 node..."
-	###Source the admin credentials
-	source ./admin-openrc
-	echo "$OS_PROJECT_DOMAIN_NAME"
-	echo "$OS_PROJECT_NAME"
-	echo "$OS_USER_DOMAIN_NAME"
-	echo "$OS_USERNAME"
-	echo "$OS_PASSWORD"
-	echo "$OS_AUTH_URL"
-	echo "$OS_IDENTITY_API_VERSION"
-	echo "$OS_IMAGE_API_VERSION"
-	
-	echo "openstack network agent list"
-	openstack network agent list
-
-	echo -e "\n\e[36m### [ BLOCK1 ] : SUCESSFULLY UNDEPLOYED NEUTRON_LINUXBRIDGE #### \e[0m\n"
-}
 unconfig_manila_controller
 unconfig_manila_block1
-unconfig_linuxbridge_block1
