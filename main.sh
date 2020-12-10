@@ -82,7 +82,7 @@ pip3 shaow paramiko
     echo "Start installing expect and pip3..."
 	for i in "${nodes[@]}"
 	do
-		echo "/etc/hosts configuration on other nodes"
+		echo "Start package on other nodes"
 		echo "[ Node $i ]"
 		ssh root@$i apt install expect python3-pip -y
 	done
@@ -92,7 +92,7 @@ pip3 shaow paramiko
 	echo "Start installing paramiko.."
 	for i in "${nodes[@]}"
 	do
-		echo "/etc/hosts configuration on other nodes"
+		echo "Start package on other nodes"
 		echo "[ Node $i ]"
 		ssh root@$i pip3 install paramiko 
 	done	
