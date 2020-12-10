@@ -2,7 +2,7 @@
 #!/bin/sh
 source /root/autovm/globalvar.sh
 
-unconfig_manial_controller(){
+unconfig_manila_controller(){
 echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETING MANILA DATABASE SERVICE AND USER..."
 
 	###Source the admin credentials

@@ -267,7 +267,7 @@ EOF
 	
 	#sed -i '/^\[cinder\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'' $filepath1
 	
-	sed -i '/#control_exchange = openstack/ a [generic]\nshare_backend_name = GENERIC\nshare_driver = manila.share.drivers.generic.GenericShareDriver\ndriver_handles_share_servers = True\nservice_instance_flavor_id = 100\nservice_image_name = manila-service-image\nservice_instance_user = manila\nservice_instance_password = manila\ninterface_driver = manila.network.linux.interface.BridgeInterfaceDriver' $filepath1
+	sed -i '/#control_exchange = openstack/ a \\\n[generic]\nshare_backend_name = GENERIC\nshare_driver = manila.share.drivers.generic.GenericShareDriver\ndriver_handles_share_servers = True\nservice_instance_flavor_id = 100\nservice_image_name = manila-service-image\nservice_instance_user = manila\nservice_instance_password = manila\ninterface_driver = manila.network.linux.interface.BridgeInterfaceDriver' $filepath1
 
 	##Restart manila-share service
 	echo"service manila-share restart"
@@ -297,8 +297,9 @@ curl https://tarballs.opendev.org/openstack/manila-image-elements/images/manila-
 
 }
 
+config_bridge_on_block
+sleep 5
 manila_Prereq_controller
 config_manila_controller
-config_bridge_on_block
 config_manila_block
 
