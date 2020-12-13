@@ -243,7 +243,7 @@ EOF
 	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://manila:'$COMMON_PASS'@controller/manila' $filepath1
 	
 	
-	sed -i '/^\[DEFAULT\]/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\ndefault_share_type = default_share_type\nshare_name_template = share-%s\nrootwrap_config = /etc/manila/rootwrap.conf\napi_paste_config = /etc/manila/api-paste.ini\nauth_strategy = keystone\nmy_ip = '$BLOCK1_MGT_IP'\nenabled_share_backends = generic\nenabled_share_protocols = NFS' $filepath1
+	sed -i '/^\[DEFAULT\]/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\ndefault_share_type = default_share_type\nrootwrap_config = /etc/manila/rootwrap.conf\nauth_strategy = keystone\nmy_ip = '$BLOCK1_MGT_IP'\nenabled_share_backends = generic\nenabled_share_protocols = NFS' $filepath1
 	
 	sed -i 's/^lock_path =*/#&/' $filepath1
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/manila/tmp' $filepath1
@@ -255,13 +255,13 @@ EOF
 	sed -i 's/^www_authenticate_uri = http*/#&/' $filepath1
 	
 			
-	sed -i '/^\[keystone_authtoken\]/ a memcached_servers = controller:11211\npassword = '$COMMON_PASS'\nuth_url = http://controller:5000\nwww_authenticate_uri = http://controller:5000' $filepath1
+	sed -i '/^\[keystone_authtoken\]/ a memcached_servers = controller:11211\npassword = '$COMMON_PASS'\nauth_url = http://controller:5000\nwww_authenticate_uri = http://controller:5000' $filepath1
 	
 	sed -i '/^\[neutron\]/ a url = http://controller:9696\nwww_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = neutron\npassword = '$COMMON_PASS'' $filepath1
 	
 	sed -i '/^\[nova\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = nova\npassword = '$COMMON_PASS'' $filepath1
 	
-	#sed -i '/^\[cinder\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'' $filepath1
+	sed -i '/^\[cinder\]/ a www_authenticate_uri = http://controller:5000\nauth_url = http://controller:5000\nmemcached_servers = controller:11211\nauth_type = password\nproject_domain_name = Default\nuser_domain_name = Default\nregion_name = RegionOne\nproject_name = service\nusername = cinder\npassword = '$COMMON_PASS'' $filepath1
 	
 	sed -i '/#control_exchange = openstack/ a \\\n[generic]\nshare_backend_name = GENERIC\nshare_driver = manila.share.drivers.generic.GenericShareDriver\ndriver_handles_share_servers = True\nservice_instance_flavor_id = 100\nservice_image_name = manila-service-image\nservice_instance_user = manila\nservice_instance_password = manila\ninterface_driver = manila.network.linux.interface.BridgeInterfaceDriver' $filepath1
 
@@ -285,7 +285,7 @@ COMMANDS
 	manila service-list
 
 ##Download the Manila-Service-image before Proceeding Further
-echo"Started Downloading Manila-service-image on controller node..."
+echo "Started Downloading Manila-service-image on controller node..."
 
 	if openstack image list | grep "manila-service-image";then
 		echo "manila-service-image already exist, IGNORING..!!"

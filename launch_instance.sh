@@ -233,6 +233,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mProvider Network Create"
 		#Heat_Instance
 	else
 		echo "---CHECK FOR CONFIGURATION AGAIN AND RESTART ESSENTIAL SERVICES---"
+		exit
 		sleep 20
 	#	recreate_ins
 		
@@ -300,7 +301,7 @@ recreate_ins(){
 }
 
 
-#launch_instance
+launch_instance
 #sleep 5
 #Heat_Instance
-recreate_ins
+#recreate_ins

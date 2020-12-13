@@ -400,9 +400,18 @@ Create_accnt_ring(){
 		ssh -t root@$OBJECT2_MGT_IP swift-init all start
 		sleep 5
 
-	echo -e "\n\e[36m[ SWIFT_ON_CONTROLLER ] :\e[0m VERIFYING THE SWIFT SERVICE DEPLOYMENT"
+	
+	
+}
+
+verfiy_operation(){
+
+# Verify the operation
+
+echo -e "\n\e[36m[ SWIFT_ON_CONTROLLER ] :\e[0m VERIFYING THE SWIFT SERVICE DEPLOYMENT"
 	
 	###Source the demo credentials
+	
 	source ./demo-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"
@@ -422,6 +431,8 @@ Create_accnt_ring(){
 	else
 		openstack container create container1
 	fi
+	
+	openstack container create container1
 	
 	###Source the demo credentials
 	source ./demo-openrc
@@ -473,13 +484,14 @@ Create_accnt_ring(){
 		echo -e "\n\e[31m##### SWIFT SERVICE FAILED, EXITING..!! ########### \e[0m\n"
 		exit
 	fi
-	
+
+
 }
 
 swift_prereq_controller	
 controller_config
 object_config
 Create_accnt_ring	
-	
+verfiy_operation
 	
 
