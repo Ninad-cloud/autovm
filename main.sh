@@ -172,11 +172,11 @@ fi
 }
 
 ##########[ LAUNCH AN INSTANCE]#############
-echo "..LANUCH A VIRTUAL MACHINE..."
-source /root/autovm/launch_instance.sh
+#echo "..LANUCH A VIRTUAL MACHINE..."
+#source /root/autovm/launch_instance.sh
 
-echo "LAUNCH ORCHESTRATION INSTANCES....."
-source /root/autovm/launch_heat_instance.sh
+#echo "LAUNCH ORCHESTRATION INSTANCES....."
+#source /root/autovm/launch_heat_instance.sh
 
 Uninstallation(){
 echo "___[START] Undeploying CLOUD_____"

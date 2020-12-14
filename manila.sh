@@ -217,7 +217,7 @@ config_manila_block(){
 ##Install Packages on share-node
 echo "---Started Package Intallation on  [ block1 ] (Share) Node---- "
 
-		ssh root@$BLOCK1_MGT_IP << EOF
+		ssh root@$COMPUTE1_MGT_IP << EOF
 	expect -c '
 	spawn apt-get install manila-share python-pymysql python-mysqldb -y
 	expect "*Set up a database for this package*"
@@ -234,7 +234,7 @@ EOF
 
 	filepath1='/etc/manila/manila.conf'
 	
-	ssh root@$BLOCK1_MGT_IP << COMMANDS
+	ssh root@$COMPUTE1_MGT_IP << COMMANDS
 	
 	# Backup the original .conf file
 	cp $filepath1 ${filepath1}.bakup
@@ -243,7 +243,7 @@ EOF
 	grep -q "^connection = mysql+pymysql" $filepath1 || sed -i '/^\[database\]/ a connection = mysql+pymysql://manila:'$COMMON_PASS'@controller/manila' $filepath1
 	
 	
-	sed -i '/^\[DEFAULT\]/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\ndefault_share_type = default_share_type\nrootwrap_config = /etc/manila/rootwrap.conf\nauth_strategy = keystone\nmy_ip = '$BLOCK1_MGT_IP'\nenabled_share_backends = generic\nenabled_share_protocols = NFS' $filepath1
+	sed -i '/^\[DEFAULT\]/ a transport_url = rabbit://openstack:'$COMMON_PASS'@controller\ndefault_share_type = default_share_type\nrootwrap_config = /etc/manila/rootwrap.conf\nauth_strategy = keystone\nmy_ip = '$COMPUTE1_MGT_IP'\nenabled_share_backends = generic\nenabled_share_protocols = NFS' $filepath1
 	
 	sed -i 's/^lock_path =*/#&/' $filepath1
 	sed -i '/^\[oslo_concurrency\]/ a lock_path = /var/lib/manila/tmp' $filepath1
@@ -313,8 +313,8 @@ if openstack network agent list | grep block1;then
 	config_manila_controller
 	config_manila_block
 else
-	config_bridge_on_block
-	sleep 5
+	#config_bridge_on_block
+	#sleep 5
 	manila_Prereq_controller
 	config_manila_controller
 	config_manila_block
