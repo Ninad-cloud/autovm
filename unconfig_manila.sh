@@ -54,12 +54,20 @@ echo -e "\n\e[36m[ CONTROLLER ] :\e[0m DELETING MANILA DATABASE SERVICE AND USER
 	apt purge manila-api -y
 	sleep 5
 	
+	#Remove manila-ui
+	echo "apt remove python3-manila-ui"
+	apt remove python3-manila-ui -y
+	
+	apt purge python3-manila-ui -y
+	
+	service apache2 restart
+	
 	echo -e "\n\e[36m#### [ CONTROLLER ] :  SUCCESSFULLY UNDEPLOYED MANILA #### \e[0m\n"
 }
 
-unconfig_manila_block1(){
+unconfig_manila_compute(){
 
-		ssh root@$BLOCK1_MGT_IP << COMMANDS
+		ssh root@$COMPUTE1_MGT_IP << COMMANDS
 			
 		echo "--unconfig manila.conf file ---"
 		cp /etc/manila/manila.conf.bakup /etc/manila/manila.conf
@@ -73,9 +81,9 @@ unconfig_manila_block1(){
 		
 COMMANDS
 		
-		echo -e "\n\e[36m#### [ BLOCK1 ] :  SUCCESSFULLY UNDEPLOYED MANILA #### \e[0m\n"
+		echo -e "\n\e[36m#### [ COMPUTE1 ] :  SUCCESSFULLY UNDEPLOYED MANILA #### \e[0m\n"
 
 }
 
 unconfig_manila_controller
-unconfig_manila_block1
+unconfig_manila_compute

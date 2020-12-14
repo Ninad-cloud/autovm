@@ -27,7 +27,7 @@ sleep 5
 	echo "manila access-deny demo-share1 $IP2"
 	manila access-deny demo-share1 $IP2
 
-	sleep 10
+	sleep 30
 	 ###Source the admin credentials
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -42,7 +42,7 @@ sleep 5
 	echo "manila force-delete demo-share1"
 	manila force-delete demo-share1
 	
-	sleep 20
+	sleep 30
 	source ./demo-openrc
 	echo "manila list"
 	manila list
@@ -69,7 +69,7 @@ sleep 5
 	sleep 5
 	openstack server delete share-instance2
 	sleep 10
-	
+	openstack server list
 
 }
 

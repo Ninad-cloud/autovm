@@ -1,4 +1,4 @@
-#######[ UNDEPLYOMENT OF SWIFT-OBJECT STORAG ESERVICE ]##########
+#######[ UNDEPLYOMENT OF SWIFT-OBJECT STORAG SERVICE ]##########
 #!/bin/sh
 source /root/autovm/globalvar.sh
 
@@ -6,11 +6,29 @@ unconfig_controller(){
 
 	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"
 	source ./demo-openrc
-	source /root/demo-openrc
-	echo "..Delete The File from The container..."
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	
+	#Remove object from the container
+	echo "..Delete Object from The container..."
+	
+	openstack object list container1
+	
 	echo "openstack object delete container1 test_file.txt"
 	openstack object delete container1 test_file.txt
-	rm -rf /test
+	
+	echo "openstack container delete container1"
+	openstack container delete container1
+	
+	#Remove creted file	
+	rm -rf test
+	
 	###Source the admin credentials
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"

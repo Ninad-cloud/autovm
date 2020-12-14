@@ -537,35 +537,8 @@ COMMANDS
 	echo -e "\n\e[36m### [ COMPUTE1 ] : SUCESSFULLY UNDEPLOYED NEUTRON #### \e[0m\n"
 }
 
-unconfig_linuxbridge_block1(){
-
-echo -e "\n\e[36m### [ BLOCK1 ] : UNDEPLOYING NEUTRON_LINUXBRIDGE #### \e[0m\n"
-	
-	ssh root@$BLOCK1_MGT_IP << COMMANDS
-		echo "...Unconfig neutron.conf..."
-		cp /etc/neutron/neutron.conf.bak /etc/neutron/neutron.conf
-		
-		echo "..Unconfig Linux-Bridge Agent...."
-		cp /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak /etc/neutron/plugins/ml2/linuxbridge_agent.ini
-		
-		echo "..Restart AllEssential Services..."
-		service nova-compute restart
-		service neutron-linuxbridge-agent restart
-		
-		echo "..Remove Linux_bridge_agent package..."
-		apt-get remove neutron-linuxbridge-agent -y
-		
-		echo "apt purge neutron-linuxbridge-agent"
-		apt purge neutron-linuxbridge-agent -y
-		
-COMMANDS
-
-	echo -e "\n\e[36m### [ BLOCK1 ] : SUCESSFULLY UNDEPLOYED NEUTRON_LINUXBRIDGE #### \e[0m\n"
-}
-
 unconfig_neutron_controller
 unconfig_neutron_compute
-unconfig_linuxbridge_block1
 unconfig_nova_controller
 unconfig_nova_compute
 unconfig_placement
