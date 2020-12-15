@@ -42,7 +42,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 	
 	echo "--Delete the Stack---"
 	echo "openstack stack delete --yes stack"
-	openstack stack delete --yes stack
+	#openstack stack delete --yes stack
 
 	
 }

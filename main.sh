@@ -72,7 +72,7 @@ EOF
 Install_pkg(){
 #Install expect and paramiko on Controller Node
 echo "Installa expect and paramiko on controller node....."
-apt install expect python3-pip -y
+apt install python3-pip -y
 sleep 5
 pip3 install paramiko
 sleep 2
@@ -84,7 +84,7 @@ pip3 shaow paramiko
 	do
 		echo "Start package on other nodes"
 		echo "[ Node $i ]"
-		ssh root@$i apt install expect python3-pip -y
+		ssh root@$i apt install python3-pip -y
 	done
 	sleep 5
 	
@@ -135,12 +135,18 @@ local swift=$(Prompt "Do you want to add swift? ")
 echo "$swift"
 local manila=$(Prompt "Do you want to add manila? ")
 echo "$manila"
-
+local launch=$(Prompt "Do you want to launch instance? ")
+echo "$launch"
+local launch_heat=$(Prompt "Do you want to launch heat instance? ")
+echo "$launch_heat"
+local verify_swift=$(Prompt "Do you want to verify swift operations? ")
+echo "$verify_swift"
+local launch_manila=$(Prompt "Do you want to launch manila instance? ")
+echo "$launch_manila"
 
 ssh-keygen_gen
 add_ssh-keygen
 config_Hostnames
-Install_pkg
 source /root/autovm/ntp_install.sh
 source /root/autovm/generic_pkg.sh
 source /root/autovm/mysql_config.sh
@@ -154,6 +160,9 @@ source /root/autovm/dashboard.sh
 source /root/autovm/compute.sh
 source /root/autovm/neutron.sh
 source /root/autovm/cinder.sh
+source /root/autovm/heatservice.sh
+source /root/autovm/swift1.sh
+source /root/autovm/manila.sh
 
 #########[ ADD MORE  PACKAGES ]#############
 
@@ -169,17 +178,39 @@ if [ "$manila" == "1" ]; then
 	source /root/autovm/manila.sh
 fi
 
+if [ "$launch" == "1" ]; then
+	source /root/autovm/launch_instance.sh
+fi
+
+if [ "$launch_heat" == "1" ]; then
+	source /root/autovm/launch_heat_instance.sh
+fi
+
+if [ "$verify_swift" == "1" ]; then
+	source /root/autovm/swift_verify.sh
+fi
+
+if [ "$launch_manila" == "1" ]; then
+	source /root/autovm/manila_instance_launch.sh
+fi
+
+
 }
 
-##########[ LAUNCH AN INSTANCE]#############
-#echo "..LANUCH A VIRTUAL MACHINE..."
-#source /root/autovm/launch_instance.sh
-
-#echo "LAUNCH ORCHESTRATION INSTANCES....."
-#source /root/autovm/launch_heat_instance.sh
 
 Uninstallation(){
 echo "___[START] Undeploying CLOUD_____"
+echo "..[Delete Lunched instances] First Instances..."
+
+local delete_manila=$(Prompt "Do you want to delete manila instances? ")
+echo "$delete_manila" 
+
+local delete_heat=$(Prompt "Do you want to remove heat stack? ")
+echo "$delete_heat"
+
+local delete_in=$(Prompt "Do you want to delete instances? ")
+echo "$delete_in"
+
 local unconfig_heatservice=$(Prompt "Do you want to Uninstall heatservice? ")
 echo "$unconfig_heatservice"
 local unconfig_swift=$(Prompt "Do you want to Uninstall swift? ")
@@ -192,6 +223,18 @@ local unconfig_cinder=$(Prompt "Do you want to Uninstall cinder? ")
 echo "$unconfig_cinder"
 local unconfig_minimalDepl=$(Prompt "Do you want to Uninstall Minimal Deployment? ")
 echo "$unconfig_minimalDepl"
+
+if [ "$delete_manila" == "1" ]; then
+	source /root/autovm/delete_manila_instance.sh
+fi
+
+#if [ "$delete_heat" == "1" ]; then
+#	source /root/autovm/unconfig_heat.sh
+#fi
+
+if [ "$delete_in" == "1" ]; then
+	source /root/autovm/delete_instance.sh
+fi
 
 if [ "$unconfig_heatservice" == "1" ]; then
 	source /root/autovm/unconfig_heat.sh

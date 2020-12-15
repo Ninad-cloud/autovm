@@ -2,9 +2,8 @@
 #!/bin/sh
 source /root/autovm/globalvar.sh
 
-unconfig_controller(){
+remove_container(){
 
-	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"
 	source ./demo-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"
@@ -28,7 +27,14 @@ unconfig_controller(){
 	
 	#Remove creted file	
 	rm -rf test
-	
+
+
+}
+
+
+unconfig_controller(){
+
+	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"	
 	###Source the admin credentials
 	source ./admin-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
@@ -53,6 +59,7 @@ unconfig_controller(){
 	##Unconfig Proxy.conf
 	echo "Unconfig Proxy.conf file...."
 	cp /etc/swift/proxy-server.conf.bakup /etc/swift/proxy-server.conf
+	apt-get remove swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware -y
 
 }
 
@@ -160,6 +167,7 @@ remove_ring(){
 	echo "Unconfig swift.conf on controller Node"
 	cp /etc/swift/swift.conf.bakup /etc/swift/swift.conf
 	
+	
 	##Restart Services
 	echo "Restart memcached and swift-proxy on CONTROLLER"
 	service memcached restart
@@ -174,6 +182,7 @@ remove_ring(){
 	echo -e "\n\e[36m#### [ SWIFT ] : REMOVEED RING CONFIGURATION AND UNDEPLOYED SERVICE FROM ALL THE NODES #### \e[0m\n"
 
 }
+remove_container
 unconfig_controller
 unconfig_storage
 remove_ring
