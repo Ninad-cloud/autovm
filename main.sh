@@ -113,6 +113,22 @@ done
 return 
 }
 
+deploy(){
+echo "Press Y/y to start deployment and N/n to start Instance...."
+
+local di=$(Prompt "Do you want to start Deployment or Jump to Instance if deployment present? ")
+echo "$di"
+if [ "$di" == "1" ];
+then
+	Start
+else
+	Instance
+fi
+
+
+}
+
+
 Start(){
 echo "Press Y to start Installation and n to start Uninstallation...."
 
@@ -123,6 +139,20 @@ then
 	Installation
 else
 	Uninstallation
+fi
+
+}
+
+Instance(){
+echo "Press y/Y to launch instance and n/N to delete Instance...."
+
+local Ins=$(Prompt "Do you want to start Installation or Uninstallation? ")
+echo "$Ins"
+if [ "$Ins" == "1" ];
+then
+	launch
+else
+	delete_ins
 fi
 
 }
@@ -159,14 +189,7 @@ local swift=$(Prompt "Do you want to add swift? ")
 echo "$swift"
 local manila=$(Prompt "Do you want to add manila? ")
 echo "$manila"
-local launch=$(Prompt "Do you want to launch instance? ")
-echo "$launch"
-local launch_heat=$(Prompt "Do you want to launch heat instance? ")
-echo "$launch_heat"
-local verify_swift=$(Prompt "Do you want to verify swift operations? ")
-echo "$verify_swift"
-local launch_manila=$(Prompt "Do you want to launch manila instance? ")
-echo "$launch_manila"
+
 
 if [ "$min_dep" == "1" ]; then
 	minimal_deploy
@@ -185,6 +208,20 @@ fi
 if [ "$manila" == "1" ]; then
 	source /root/autovm/manila.sh
 fi
+
+sleep 10
+
+}
+
+launch(){
+local launch=$(Prompt "Do you want to launch instance? ")
+echo "$launch"
+local launch_heat=$(Prompt "Do you want to launch heat instance? ")
+echo "$launch_heat"
+local verify_swift=$(Prompt "Do you want to verify swift operations? ")
+echo "$verify_swift"
+local launch_manila=$(Prompt "Do you want to launch manila instance? ")
+echo "$launch_manila"
 
 if [ "$launch" == "1" ]; then
 	source /root/autovm/launch_instance.sh
@@ -205,9 +242,8 @@ fi
 
 }
 
-
-Uninstallation(){
-echo "___[START] Undeploying CLOUD_____"
+delete_ins(){
+sleep 10
 echo "..[Delete Lunched instances] First Instances..."
 
 local delete_manila=$(Prompt "Do you want to delete manila instances? ")
@@ -219,24 +255,13 @@ echo "$delete_heat"
 local delete_in=$(Prompt "Do you want to delete instances? ")
 echo "$delete_in"
 
-local unconfig_heatservice=$(Prompt "Do you want to Uninstall heatservice? ")
-echo "$unconfig_heatservice"
-local unconfig_swift=$(Prompt "Do you want to Uninstall swift? ")
-echo "$unconfig_swift"
-local unconfig_manila=$(Prompt "Do you want to Uninstall manila? ")
-echo "$unconfig_manila"
-local unconfig_horizon=$(Prompt "Do you want to Uninstall Horizon? ")
-echo "$unconfig_horizon"
-local unconfig_cinder=$(Prompt "Do you want to Uninstall cinder? ")
-echo "$unconfig_cinder"
-local unconfig_minimalDepl=$(Prompt "Do you want to Uninstall Minimal Deployment? ")
-echo "$unconfig_minimalDepl"
-
 if [ "$delete_manila" == "1" ]; then
+	sleep 5
 	source /root/autovm/delete_manila_instance.sh
 fi
 
 if [ "$delete_heat" == "1" ]; then
+	sleep 5
 	source ./demo-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"
@@ -253,8 +278,28 @@ if [ "$delete_heat" == "1" ]; then
 fi
 
 if [ "$delete_in" == "1" ]; then
+	sleep 5
 	source /root/autovm/delete_instance.sh
 fi
+
+}
+
+Uninstallation(){
+echo "___[START] Undeploying CLOUD_____"
+
+local unconfig_heatservice=$(Prompt "Do you want to Uninstall heatservice? ")
+echo "$unconfig_heatservice"
+local unconfig_swift=$(Prompt "Do you want to Uninstall swift? ")
+echo "$unconfig_swift"
+local unconfig_manila=$(Prompt "Do you want to Uninstall manila? ")
+echo "$unconfig_manila"
+local unconfig_horizon=$(Prompt "Do you want to Uninstall Horizon? ")
+echo "$unconfig_horizon"
+local unconfig_cinder=$(Prompt "Do you want to Uninstall cinder? ")
+echo "$unconfig_cinder"
+local unconfig_minimalDepl=$(Prompt "Do you want to Uninstall Minimal Deployment? ")
+echo "$unconfig_minimalDepl"
+
 
 if [ "$unconfig_heatservice" == "1" ]; then
 	source /root/autovm/unconfig_heat.sh
@@ -282,5 +327,4 @@ if [ "$unconfig_minimalDepl" == "1" ]; then
 fi
 
 }
-
-Start
+deploy
