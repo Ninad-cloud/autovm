@@ -99,14 +99,14 @@ pip3 install paramiko
 
 verify_pkg(){
 #Verify on controller Node
-pip3 shaow paramiko
+pip3 show paramiko
 
 # Verify on Other nodes
 for i in "${nodes[@]}"
 	do
 		echo "package on other nodes"
 		echo "[ Node $i ]"
-		ssh root@$i pip3 shaow paramiko
+		ssh root@$i pip3 show paramiko
 	done
 	sleep 5
 
