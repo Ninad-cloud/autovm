@@ -128,7 +128,7 @@ fi
 }
 
 minimal_deploy(){
-
+echo "Minimal Deployment Starts here...!"
 ssh-keygen_gen
 add_ssh-keygen
 config_Hostnames
