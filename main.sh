@@ -127,22 +127,7 @@ fi
 
 }
 
-Installation(){
-echo "[START]___MINIMAL DEPLOYMENT ALONG WITH DASHBOARD AND CINDER IS STARTED____"
-local heatservice=$(Prompt "Do you want to add heatservice? ")
-echo "$heatservice"
-local swift=$(Prompt "Do you want to add swift? ")
-echo "$swift"
-local manila=$(Prompt "Do you want to add manila? ")
-echo "$manila"
-local launch=$(Prompt "Do you want to launch instance? ")
-echo "$launch"
-local launch_heat=$(Prompt "Do you want to launch heat instance? ")
-echo "$launch_heat"
-local verify_swift=$(Prompt "Do you want to verify swift operations? ")
-echo "$verify_swift"
-local launch_manila=$(Prompt "Do you want to launch manila instance? ")
-echo "$launch_manila"
+minimal_deploy(){
 
 ssh-keygen_gen
 add_ssh-keygen
@@ -160,6 +145,32 @@ source /root/autovm/dashboard.sh
 source /root/autovm/compute.sh
 source /root/autovm/neutron.sh
 source /root/autovm/cinder.sh
+
+}
+
+
+Installation(){
+echo "[START]___MINIMAL DEPLOYMENT ALONG WITH DASHBOARD AND CINDER IS STARTED____"
+local min_dep=$(Prompt "Do you want to start with only minimal deployment? ")
+echo "$min_dep"
+local heatservice=$(Prompt "Do you want to add heatservice? ")
+echo "$heatservice"
+local swift=$(Prompt "Do you want to add swift? ")
+echo "$swift"
+local manila=$(Prompt "Do you want to add manila? ")
+echo "$manila"
+local launch=$(Prompt "Do you want to launch instance? ")
+echo "$launch"
+local launch_heat=$(Prompt "Do you want to launch heat instance? ")
+echo "$launch_heat"
+local verify_swift=$(Prompt "Do you want to verify swift operations? ")
+echo "$verify_swift"
+local launch_manila=$(Prompt "Do you want to launch manila instance? ")
+echo "$launch_manila"
+
+if [ "$min_dep" == "1" ]; then
+	minimal_deploy
+fi
 
 #########[ ADD MORE  PACKAGES ]#############
 
@@ -225,9 +236,21 @@ if [ "$delete_manila" == "1" ]; then
 	source /root/autovm/delete_manila_instance.sh
 fi
 
-#if [ "$delete_heat" == "1" ]; then
-#	source /root/autovm/unconfig_heat.sh
-#fi
+if [ "$delete_heat" == "1" ]; then
+	source ./demo-openrc
+	echo "$OS_PROJECT_DOMAIN_NAME"
+	echo "$OS_PROJECT_NAME"
+	echo "$OS_USER_DOMAIN_NAME"
+	echo "$OS_USERNAME"
+	echo "$OS_PASSWORD"
+	echo "$OS_AUTH_URL"
+	echo "$OS_IDENTITY_API_VERSION"
+	echo "$OS_IMAGE_API_VERSION"
+	
+	echo "openstack stack delete --yes stack"
+	openstack stack delete --yes stack
+	
+fi
 
 if [ "$delete_in" == "1" ]; then
 	source /root/autovm/delete_instance.sh
