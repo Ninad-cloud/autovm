@@ -46,6 +46,7 @@ unconfig_Ntp(){
 
 }
 
+
 unconfig_Mysql(){
 
 	echo -e "\n\n\e[36m###### MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE ###### \e[0m\n"	
@@ -55,6 +56,17 @@ unconfig_Mysql(){
 #	service mysql start
 	apt remove mariadb-server python-pymysql -y
 	apt purge mariadb-server python-pymysql -y
+	
+	#remove openstackclient package for Stein
+		
+	apt remove python3-openstackclient -y
+	for i in "${nodes[@]}"
+	do
+		echo "$i"
+		ssh root@$i apt remove python3-openstackclient -y
+	done
+	
+	
 	echo -e "\n\n\e[36m######MYSQL UNINSTALL AND UNCONFIGURE ON CONTROLLER NODE IN DONE #### \e[0m\n"
 
 }
