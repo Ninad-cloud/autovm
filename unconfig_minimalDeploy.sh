@@ -36,6 +36,12 @@ unconfig_Ntp(){
 		scp /etc/chrony/chrony.conf root@$i:/etc/chrony/chrony.conf
 	done
 	
+	for i in "${nodes[@]}"
+	do
+		echo "$i"
+		ssh root@$i apt remove chrony -y
+	done
+	
 	echo -e "\n\n\e[36m#### NTP UNCONFIGURATION ON ALL NODES IN DONE ####### \e[0m\n"
 
 }
