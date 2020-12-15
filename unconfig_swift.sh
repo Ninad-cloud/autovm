@@ -176,6 +176,11 @@ remove_ring(){
 	service memcached restart
 	service swift-proxy restart
 	sleep 5
+	ssh root@$OBJECT1_MGT_IP apt-get remove swift swift-account swift-container swift-object -y
+	ssh root@$OBJECT1_MGT_IP apt-get purge swift swift-account swift-container swift-object -y
+	
+	ssh root@$OBJECT2_MGT_IP apt-get remove swift swift-account swift-container swift-object -y
+	ssh root@$OBJECT2_MGT_IP apt-get purge swift swift-account swift-container swift-object -y
 	
 	echo "REstart swift-init on both the Object Nodes...."
 	ssh root@$OBJECT1_MGT_IP swift-init all start
