@@ -107,12 +107,12 @@ unconfig_storage(){
 
 		if [ ! -z "$disk1_formated" ];then
 			echo "mkfs.ext4  /dev/$OBJECT_DISK1 > /dev/null"
-			#mkfs.ext4  /dev/$OBJECT_DISK1 > /dev/null
+			mkfs.ext4  /dev/$OBJECT_DISK1 > /dev/null
 		fi
 		
 		if [ ! -z "$disk2_formated" ];then
 			echo "mkfs.ext4  /dev/$OBJECT_DISK2 > /dev/null"
-			#mkfs.ext4  /dev/$OBJECT_DISK2 > /dev/null
+			mkfs.ext4  /dev/$OBJECT_DISK2 > /dev/null
 		fi
 
                        		
