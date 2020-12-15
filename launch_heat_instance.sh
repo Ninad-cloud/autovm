@@ -37,6 +37,7 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE ] : \e[0m DETERMINE INSTANCE OPTIONS"
 	echo "openstack stack output show --all stack"
 	openstack stack output show --all stack
 	
+	sleep 20
 	echo "openstack server list"
 	openstack server list
 	

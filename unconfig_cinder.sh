@@ -55,6 +55,10 @@ unconfig_controller(){
 	service nova-api restart
 	service cinder-scheduler restart
 	service apache2 restart
+	
+	#Remove cinder packages
+	apt remove cinder-api cinder-scheduler -y
+	apt purge cinder-api cinder-scheduler -y
 
 	echo -e "\n\e[36m### [ CONTROLLER ] : SUCCESSFULLY UNDEPLOYED CINDER ####### \e[0m\n"
 
@@ -135,6 +139,8 @@ echo -e "\n\e[36m######### [ BLOCK1 ] :  UNDEPLOY CINDER  ###### \e[0m\n"
 		echo "__Restart The Services--"
 		service tgt restart
         service cinder-volume restart
+		apt remove cinder-volume -y
+		apt purge cinder-volume -y
 
 COMMANDS
 		

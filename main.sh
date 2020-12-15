@@ -75,8 +75,6 @@ echo "Installa expect and paramiko on controller node....."
 apt install python3-pip -y
 sleep 5
 pip3 install paramiko
-sleep 2
-pip3 shaow paramiko
 
 ##Install expect and python3-pip on other nodes
     echo "Start installing expect and pip3..."
@@ -99,6 +97,22 @@ pip3 shaow paramiko
  
 }
 
+verify_pkg(){
+#Verify on controller Node
+pip3 shaow paramiko
+
+# Verify on Other nodes
+for i in "${nodes[@]}"
+	do
+		echo "package on other nodes"
+		echo "[ Node $i ]"
+		ssh root@$i pip3 shaow paramiko
+	done
+	sleep 5
+
+
+
+}
 
 Prompt(){
 while true; do
@@ -146,7 +160,7 @@ fi
 Instance(){
 echo "Press y/Y to launch instance and n/N to delete Instance...."
 
-local Ins=$(Prompt "Do you want to start Installation or Uninstallation? ")
+local Ins=$(Prompt "Do you want to Launch Instances or Delete Instances? ")
 echo "$Ins"
 if [ "$Ins" == "1" ];
 then
@@ -162,6 +176,7 @@ echo "Minimal Deployment Starts here...!"
 ssh-keygen_gen
 add_ssh-keygen
 config_Hostnames
+verify_pkg
 source /root/autovm/ntp_install.sh
 source /root/autovm/generic_pkg.sh
 source /root/autovm/mysql_config.sh
@@ -225,14 +240,17 @@ echo "$launch_manila"
 
 if [ "$launch" == "1" ]; then
 	source /root/autovm/launch_instance.sh
+	sleep 5
 fi
 
 if [ "$launch_heat" == "1" ]; then
 	source /root/autovm/launch_heat_instance.sh
+	sleep 5
 fi
 
 if [ "$verify_swift" == "1" ]; then
 	source /root/autovm/swift_verify.sh
+	sleep 5
 fi
 
 if [ "$launch_manila" == "1" ]; then
