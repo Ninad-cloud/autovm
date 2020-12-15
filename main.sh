@@ -176,8 +176,8 @@ echo "Minimal Deployment Starts here...!"
 ssh-keygen_gen
 add_ssh-keygen
 config_Hostnames
-verify_pkg
 source /root/autovm/ntp_install.sh
+verify_pkg
 source /root/autovm/generic_pkg.sh
 source /root/autovm/mysql_config.sh
 source /root/autovm/rabbitmq.sh

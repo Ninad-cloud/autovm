@@ -60,6 +60,8 @@ unconfig_controller(){
 	echo "Unconfig Proxy.conf file...."
 	cp /etc/swift/proxy-server.conf.bakup /etc/swift/proxy-server.conf
 	apt-get remove swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware -y
+	
+	rm -rf /etc/swift
 
 }
 
@@ -137,6 +139,7 @@ unconfig_storage(){
 			
 		##Remove /var/cache/swift directory
 		rm -rf /var/cache/swift
+		
 COMMANDS
 	
 	echo -e "\n\e[36m### [ SWIFT_ON_OBJECT: $i ] :  SUCESSFULLY UNDEPLOYED SWIFT ON OBJECT NODE ### \e[0m\n"
@@ -178,6 +181,8 @@ remove_ring(){
 	ssh root@$OBJECT1_MGT_IP swift-init all start
 	ssh root@$OBJECT2_MGT_IP swift-init all start
 
+	ssh root@$OBJECT1_MGT_IP rm -rf /etc/swift
+	ssh root@$OBJECT2_MGT_IP rm -rf /etc/swift
 	
 	echo -e "\n\e[36m#### [ SWIFT ] : REMOVEED RING CONFIGURATION AND UNDEPLOYED SERVICE FROM ALL THE NODES #### \e[0m\n"
 
