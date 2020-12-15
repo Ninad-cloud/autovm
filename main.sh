@@ -160,9 +160,6 @@ source /root/autovm/dashboard.sh
 source /root/autovm/compute.sh
 source /root/autovm/neutron.sh
 source /root/autovm/cinder.sh
-source /root/autovm/heatservice.sh
-source /root/autovm/swift1.sh
-source /root/autovm/manila.sh
 
 #########[ ADD MORE  PACKAGES ]#############
 
