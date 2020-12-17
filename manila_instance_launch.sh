@@ -147,12 +147,13 @@ echo -e "\n\e[36m[ LAUNCH_INSTANCE STARTED ] : \e[0mFOR DHSS OPTION - 2"
 		manila create NFS 1 --name demo-share1 --share-network demo-share-network1
 	fi
 	
-	sleep 230
+	sleep 270
 	
+	source ./demo-openrc
 	##Check for creation of manila-share-instance
 	echo "manila list"
 	manila list
-	
+	sleep 10
 	if manila list | grep "available";then
 		echo "---SELFSERVICE_INSTANCE SUCCESSFULLY LAUNCH---"
 	else

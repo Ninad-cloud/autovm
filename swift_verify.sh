@@ -9,9 +9,10 @@ verfiy_operation(){
 # Verify the operation
 
 echo -e "\n\e[36m[ SWIFT_ON_CONTROLLER ] :\e[0m VERIFYING THE SWIFT SERVICE DEPLOYMENT"
+	service swift-proxy restart
+	
 	
 	###Source the demo credentials
-	
 	source ./demo-openrc
 	echo "$OS_PROJECT_DOMAIN_NAME"
 	echo "$OS_PROJECT_NAME"

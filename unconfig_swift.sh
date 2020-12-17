@@ -29,6 +29,10 @@ remove_container(){
 
 unconfig_controller(){
 
+<<'COMMENTS'
+	cd /etc/swift
+	pwd
+	
 	#remove Disk from the Ring
 	##Account Ring
 	swift-ring-builder account.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6202 --device $OBJECT1_DISK1
@@ -54,9 +58,10 @@ unconfig_controller(){
 	
 	swift-ring-builder object.builder rebalance
 	
-
 	
-
+	sleep 10
+COMMENTS
+	
 	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"	
 	###Source the admin credentials
 	source ./admin-openrc
@@ -82,7 +87,7 @@ unconfig_controller(){
 	##Unconfig Proxy.conf
 	echo "Unconfig Proxy.conf file...."
 	cp /etc/swift/proxy-server.conf.bakup /etc/swift/proxy-server.conf
-	apt-get remove swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware -y
+	apt-get remove swift swift-proxy python-swiftclient  -y
 	
 	rm -rf /etc/swift
 
@@ -187,7 +192,7 @@ remove_ring(){
 		ssh root@$i rm -rf /etc/swift/swift.conf
 	done
 	
-	ls -l /etc/swift
+	
 	
 	##Unconfig /etc/swift/swift.conf on CONTROLLER
 	echo "Unconfig swift.conf on controller Node"
@@ -212,6 +217,10 @@ remove_ring(){
 	ssh root@$OBJECT1_MGT_IP rm -rf /etc/swift
 	ssh root@$OBJECT2_MGT_IP rm -rf /etc/swift
 	
+	ssh root@$OBJECT1_MGT_IP init 6
+	ssh root@$OBJECT2_MGT_IP init 6
+	
+	sleep 50
 	echo -e "\n\e[36m#### [ SWIFT ] : REMOVEED RING CONFIGURATION AND UNDEPLOYED SERVICE FROM ALL THE NODES #### \e[0m\n"
 
 }

@@ -216,12 +216,12 @@ if [ "$heatservice" == "1" ]; then
 	source /root/autovm/heatservice.sh
 fi
 
-if [ "$swift" == "1" ]; then
-	source /root/autovm/swift1.sh
-fi
-
 if [ "$manila" == "1" ]; then
 	source /root/autovm/manila.sh
+fi
+
+if [ "$swift" == "1" ]; then
+	source /root/autovm/swift1.sh
 fi
 
 sleep 10
