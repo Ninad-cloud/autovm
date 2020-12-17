@@ -130,7 +130,7 @@ return
 deploy(){
 echo "Press Y/y to start deployment and N/n to start Instance...."
 
-local di=$(Prompt "Do you want to start Deployment or Jump to Instance if deployment present? ")
+local di=$(Prompt "Do you want to Jump to Deployment/Undeployment or Jump to Instance Operations if deployment present? ")
 echo "$di"
 if [ "$di" == "1" ];
 then
