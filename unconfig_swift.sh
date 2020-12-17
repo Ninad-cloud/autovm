@@ -14,16 +14,11 @@ remove_container(){
 	echo "$OS_IDENTITY_API_VERSION"
 	echo "$OS_IMAGE_API_VERSION"
 	
-	#Remove object from the container
-	echo "..Delete Object from The container..."
+	#Remove objects and container
+	echo "..Delete Objects and container..."
 	
-	openstack object list container1
-	
-	echo "openstack object delete container1 test_file.txt"
-	openstack object delete container1 test_file.txt
-	
-	echo "openstack container delete container1"
-	openstack container delete container1
+	echo "swift delete -a"
+	swift delete -a
 	
 	#Remove creted file	
 	rm -rf test
@@ -33,6 +28,34 @@ remove_container(){
 
 
 unconfig_controller(){
+
+	#remove Disk from the Ring
+	##Account Ring
+	swift-ring-builder account.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6202 --device $OBJECT1_DISK1
+	swift-ring-builder account.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6202 --device $OBJECT1_DISK2
+	swift-ring-builder account.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6202 --device $OBJECT2_DISK1
+	swift-ring-builder account.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6202 --device $OBJECT2_DISK2
+
+	swift-ring-builder account.builder rebalance
+	
+	##Container Ring
+	swift-ring-builder container.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6201 --device $OBJECT1_DISK1
+	swift-ring-builder container.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6201 --device $OBJECT1_DISK2
+	swift-ring-builder container.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6201 --device $OBJECT2_DISK1
+	swift-ring-builder container.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6201 --device $OBJECT2_DISK2
+	
+	swift-ring-builder container.builder rebalance
+	
+	##Object Ring
+	swift-ring-builder object.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6200 --device $OBJECT1_DISK1
+	swift-ring-builder object.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6200 --device $OBJECT1_DISK2
+	swift-ring-builder object.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6200 --device $OBJECT2_DISK1
+	swift-ring-builder object.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6200 --device $OBJECT2_DISK2
+	
+	swift-ring-builder object.builder rebalance
+	
+
+	
 
 	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"	
 	###Source the admin credentials
@@ -168,7 +191,7 @@ remove_ring(){
 	
 	##Unconfig /etc/swift/swift.conf on CONTROLLER
 	echo "Unconfig swift.conf on controller Node"
-	cp /etc/swift/swift.conf.bakup /etc/swift/swift.conf
+	#cp /etc/swift/swift.conf.bakup /etc/swift/swift.conf
 	
 	
 	##Restart Services
