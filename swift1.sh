@@ -52,7 +52,7 @@ controller_config(){
 ###installing Packages on Controller Node####
 
 	PKG_FAILED=0
-	apt-get install swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached -y || PKG_FAILED=1
+	apt-get install swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware -y || PKG_FAILED=1
 	if [ $PKG_FAILED -gt 0 ];then
 		echo -e "\e[31m\n$1 PACKAGE INSTALLATION FAILED, EXITING THE SCRIPT [ INSTALLATION FAILED ] \e[0m\n"
 		apt update

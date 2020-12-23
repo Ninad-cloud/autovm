@@ -29,39 +29,7 @@ remove_container(){
 
 unconfig_controller(){
 
-<<'COMMENTS'
-	cd /etc/swift
-	pwd
-	
-	#remove Disk from the Ring
-	##Account Ring
-	swift-ring-builder account.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6202 --device $OBJECT1_DISK1
-	swift-ring-builder account.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6202 --device $OBJECT1_DISK2
-	swift-ring-builder account.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6202 --device $OBJECT2_DISK1
-	swift-ring-builder account.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6202 --device $OBJECT2_DISK2
 
-	swift-ring-builder account.builder rebalance
-	
-	##Container Ring
-	swift-ring-builder container.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6201 --device $OBJECT1_DISK1
-	swift-ring-builder container.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6201 --device $OBJECT1_DISK2
-	swift-ring-builder container.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6201 --device $OBJECT2_DISK1
-	swift-ring-builder container.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6201 --device $OBJECT2_DISK2
-	
-	swift-ring-builder container.builder rebalance
-	
-	##Object Ring
-	swift-ring-builder object.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6200 --device $OBJECT1_DISK1
-	swift-ring-builder object.builder remove --region 1 --zone 1 --ip $OBJECT1_MGT_IP --port 6200 --device $OBJECT1_DISK2
-	swift-ring-builder object.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6200 --device $OBJECT2_DISK1
-	swift-ring-builder object.builder remove --region 1 --zone 2 --ip $OBJECT2_MGT_IP --port 6200 --device $OBJECT2_DISK2
-	
-	swift-ring-builder object.builder rebalance
-	
-	
-	sleep 10
-COMMENTS
-	
 	echo -e "\n\e[36m####### [ CONTROLLER ] :  UNDEPLOY SWIFT ###### \e[0m\n"	
 	###Source the admin credentials
 	source ./admin-openrc
